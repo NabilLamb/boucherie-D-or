@@ -16,12 +16,18 @@ async function connectDB() {
             bufferCommands: false,
         }
 
-        cached.promise = mongoose.connect(`${process.env.MONGODB_URI}/boucheriedor`, opts).then((mongoose) => {
+        cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
             return mongoose
         })
     }
 
     cached.conn = await cached.promise
+
+    if (typeof window !== 'undefined') {
+        document.body.removeAttribute('cz-shortcut-listen');
+    }
+
+    console.log("MONGODB_URI:", process.env.MONGODB_URI);
     return cached.conn
 }
 
