@@ -23,10 +23,6 @@ async function connectDB() {
 
     cached.conn = await cached.promise
 
-    if (typeof window !== 'undefined') {
-        document.body.removeAttribute('cz-shortcut-listen');
-    }
-
     console.log("MONGODB_URI:", process.env.MONGODB_URI);
     return cached.conn
 }
