@@ -6,22 +6,24 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-
     name: {
         type: String,
-        require: true
+        required: true,
     },
-
     email: {
         type: String,
         required: true,
         unique: true,
     },
-
-    imageUrl: { type: String, require: true, default: "no image url" },
-
-    cartItems: { type: Object, default: {} }
-
+    imageUrl: { 
+        type: String, 
+        required: true,
+        default: "no image url",
+    },
+    cartItems: { 
+        type: Object, 
+        default: {} 
+    }
 }, { minimize: false });
 
 const User = mongoose.models.user || mongoose.model('user', userSchema);
