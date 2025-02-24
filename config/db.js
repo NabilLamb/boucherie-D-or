@@ -16,14 +16,13 @@ async function connectDB() {
             bufferCommands: false,
         }
 
-        cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
+        cached.promise = mongoose.connect(`${process.env.MONGODB_URI}/goldenbutcher`, opts).then((mongoose) => {
             return mongoose
         })
     }
 
     cached.conn = await cached.promise
 
-    console.log("MONGODB_URI:", process.env.MONGODB_URI);
     return cached.conn
 }
 
