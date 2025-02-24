@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    imageUrl: { type: String, require: true },
+
+    imageUrl: { type: String, require: true, default: "no image url" },
 
     cartItems: { type: Object, default: {} }
 
