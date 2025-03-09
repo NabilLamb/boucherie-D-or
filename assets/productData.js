@@ -212,20 +212,10 @@ export const products = [
     rating: 4.9,
     price: "€8.99",
     imgSrc: assets.olive_oil,
-  },
-
-  // Additional Meat
-  {
-    id: 20,
-    name: "Goat Meat Cubes",
-    category: "Meats",
-    subCategory: "Goat",
-    description: "Freshly cut, perfect for curries",
-    rating: 4.6,
-    price: "€15.99/kg",
-    imgSrc: assets.goat_meat,
   }
 ];
+
+
 /////////////////////////////////////////////////
 
 // export const products = [

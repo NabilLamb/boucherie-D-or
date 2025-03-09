@@ -17,7 +17,8 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${outfit.className} antialiased text-gray-700`} >
+        <body  className="outfit_ade5a21b-module__G7qryG__className antialiased text-gray-700"
+        suppressHydrationWarning>
           <Toaster />
           <AppContextProvider>
             {children}

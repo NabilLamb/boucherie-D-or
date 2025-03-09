@@ -1,20 +1,55 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import { assets } from "@/assets/assets";
 
 const ProductCard = ({ product }) => {
-  const { currency, router } = useAppContext();
-  const [isLiked, setIsLiked] = React.useState(false); // State to track if the heart is "liked"
+  const { currency, router, addToCart } = useAppContext(); 
+  const [isLiked, setIsLiked] = React.useState(false);
 
   // Calculate star rating
   const fullStars = Math.floor(product.rating);
   const partialStar = product.rating - fullStars;
 
+  // Handle image source correctly
+  const getImageSource = () => {
+    try {
+      // Use default image from assets
+      const defaultImage = assets.default_img;
+
+      // If no image is provided, return default
+      if (!product.image || product.image.length === 0) return defaultImage;
+
+      // Handle both array and string formats
+      const imgSources = Array.isArray(product.image)
+        ? product.image
+        : [product.image];
+
+      // Find first valid image source
+      const validSource = imgSources.find((source) => {
+        if (typeof source === "string") {
+          return source.trim() !== "" && assets[source];
+        }
+        return source?.url?.trim() !== "";
+      });
+
+      // Return valid source or default
+      return validSource
+        ? assets[validSource] || validSource.url
+        : defaultImage;
+    } catch (error) {
+      console.error("Error processing image:", error);
+      return assets.default_img;
+    }
+  };
+
+  const imageSrc = getImageSource();
+
   // Toggle heart color
   const handleHeartClick = (e) => {
-    e.stopPropagation(); // Prevent the card's onClick from triggering
-    setIsLiked(!isLiked); // Toggle the liked state
+    e.stopPropagation();
+    setIsLiked(!isLiked);
   };
 
   return (
@@ -28,12 +63,16 @@ const ProductCard = ({ product }) => {
       {/* Image Section */}
       <div className="relative w-full h-52 rounded-lg overflow-hidden bg-gray-50">
         <Image
-          src={product.image[0]}
+          src={imageSrc}
           alt={product.name}
           width={400}
           height={400}
           className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+          onError={(e) => {
+            e.target.src = assets.default_img;
+          }}
         />
+
         {/* Custom Heart Button */}
         <button
           onClick={handleHeartClick}
@@ -60,11 +99,9 @@ const ProductCard = ({ product }) => {
 
       {/* Product Info */}
       <div className="w-full space-y-1.5">
-        {/* Category, SubCategory & Unit */}
+        {/* Category & Unit */}
         <div className="flex justify-between items-center text-xs text-gray-500">
-          <span className="truncate">
-            {product.category} / {product.subCategory}
-          </span>
+          <span className="truncate">{product.category}</span>
           <span>{product.unit}</span>
         </div>
 
@@ -130,12 +167,12 @@ const ProductCard = ({ product }) => {
             )}
           </div>
 
-          {/* Buy Now Button */}
+          {/* Add to Cart Button */}
           <div className="flex justify-end">
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Add your buy now logic here
+                addToCart(product._id); // Add this line
               }}
               className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded-full transition-colors flex items-center gap-1 whitespace-nowrap w-auto"
             >
@@ -149,8 +186,8 @@ const ProductCard = ({ product }) => {
                 <circle cx="16.5" cy="18.5" r="1.5" />
                 <circle cx="9.5" cy="18.5" r="1.5" />
                 <path d="M18 16H8a1 1 0 0 1-.958-.713L4.256 6H3a1 1 0 0 1 0-2h2a1 1 0 0 1 .958.713L6.344 6H21a1 1 0 0 1 .937 1.352l-3 8A1 1 0 0 1 18 16zm-9.256-2h8.563l2.25-6H6.944z" />
-               </svg>
-              Buy Now
+              </svg>
+              Add To Cart
             </button>
           </div>
         </div>

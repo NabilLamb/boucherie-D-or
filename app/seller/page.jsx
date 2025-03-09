@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import toast from "react-hot-toast";
 import axios from "axios";
+import {categories} from "@/assets/categoriesData"
 
 const AddProduct = () => {
   const { getToken } = useAppContext();
@@ -131,16 +132,12 @@ const AddProduct = () => {
               onChange={(e) => setCategory(e.target.value)}
               value={category}
             >
-              <option value="Meats">Meats</option>
-              <option value="Poultry">Poultry</option>
-              <option value="Lamb">Lamb</option>
-              <option value="Charcuterie">Charcuterie</option>
-              <option value="Cheese">Cheese</option>
-              <option value="Kitchen Tools">Kitchen Tools</option>
-              <option value="Bakery">Bakery</option>
-              <option value="Produce">Produce</option>
-              <option value="Beverages">Beverages</option>
-              <option value="Snacks">Snacks</option>
+              <option value="" disabled>
+                Selectc Category
+              </option>
+              {categories.map((cat, index) => (
+                <option key={index} value={cat.name}>{cat.name}</option>
+              ))}
             </select>
           </div>
 
