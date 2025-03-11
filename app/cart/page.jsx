@@ -5,12 +5,18 @@ import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
-import {getImageSource} from "@/utils/images"
+import { getImageSource } from "@/utils/images";
 // Reuse the same image helper from your Product page
 
-
 const Cart = () => {
-  const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount } = useAppContext();
+  const {
+    products,
+    router,
+    cartItems,
+    addToCart,
+    updateCartQuantity,
+    getCartCount,
+  } = useAppContext();
 
   return (
     <>
@@ -38,6 +44,9 @@ const Cart = () => {
                   </th>
                   <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
                     Quantity
+                  </th>
+                  <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
+                    Unit
                   </th>
                   <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
                     Subtotal
@@ -68,12 +77,6 @@ const Cart = () => {
                               }}
                             />
                           </div>
-                          <button
-                            className="md:hidden text-xs text-orange-600 mt-1"
-                            onClick={() => updateCartQuantity(product._id, 0)}
-                          >
-                            Remove
-                          </button>
                         </div>
                         <div className="text-sm hidden md:block">
                           <p className="text-gray-800">{product.name}</p>
@@ -96,8 +99,13 @@ const Cart = () => {
                         <div className="flex items-center md:gap-2 gap-1">
                           <button
                             onClick={() =>
-                              updateCartQuantity(product._id, cartItems[itemId] - 1)
+                              updateCartQuantity(
+                                product._id,
+                                cartItems[itemId] - 1
+                              )
                             }
+                            disabled={cartItems[itemId] <= 1}
+                            className="disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Image
                               src={assets.decrease_arrow}
@@ -106,13 +114,15 @@ const Cart = () => {
                             />
                           </button>
                           <input
-                            onChange={(e) =>
-                              updateCartQuantity(
-                                product._id,
+                            onChange={(e) => {
+                              const newValue = Math.max(
+                                1,
                                 Number(e.target.value)
-                              )
-                            }
+                              ); // Ensure minimum value of 1
+                              updateCartQuantity(product._id, newValue);
+                            }}
                             type="number"
+                            min={1}
                             value={cartItems[itemId]}
                             className="w-8 border text-center appearance-none"
                           />
@@ -125,11 +135,13 @@ const Cart = () => {
                           </button>
                         </div>
                       </td>
+                      <td className="py-4 md:px-4 px-1 text-gray-600">
+                        {product.unit}
+                      </td>
 
                       {/* Subtotal column */}
                       <td className="py-4 md:px-4 px-1 text-gray-600">
-                        €
-                        {(finalPrice * cartItems[itemId]).toFixed(2)}
+                        €{(finalPrice * cartItems[itemId]).toFixed(2)}
                       </td>
                     </tr>
                   );
@@ -139,7 +151,7 @@ const Cart = () => {
           </div>
 
           <button
-            onClick={() => router.push("/all-products")}
+            onClick={() => router.push("/#products")}
             className="group flex items-center mt-6 gap-2 text-orange-600"
           >
             <Image

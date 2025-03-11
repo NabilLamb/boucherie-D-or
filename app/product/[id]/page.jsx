@@ -1,14 +1,13 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { assets } from "@/assets/assets";
+import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
-import SuggestedProductsSection from "@/components/SuggestedProductsSection";
-import {getImageSource} from "@/utils/images"
 
 const Product = () => {
   const { id } = useParams();
@@ -17,6 +16,56 @@ const Product = () => {
   const [productData, setProductData] = useState(null);
   const [zoomStyle, setZoomStyle] = useState({});
   const imageRef = useRef(null);
+
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const PRODUCTS_PER_PAGE = 5;
+
+  const suggestedProducts = useMemo(() => {
+    if (!productData || !products.length) return [];
+
+    // Filter out current product and sort by category match
+    return products
+      .filter((p) => p._id !== productData._id)
+      .sort((a, b) => {
+        const aMatch = a.category === productData.category ? 1 : 0;
+        const bMatch = b.category === productData.category ? 1 : 0;
+        return bMatch - aMatch;
+      });
+  }, [products, productData]);
+
+  const totalPages = Math.ceil(suggestedProducts.length / PRODUCTS_PER_PAGE);
+  const paginatedProducts = suggestedProducts.slice(
+    currentPage * PRODUCTS_PER_PAGE,
+    (currentPage + 1) * PRODUCTS_PER_PAGE
+  );
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+  };
+
+  const handlePrev = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 0));
+  };
+
+  // Image handling utility function
+  const getImageSource = (image) => {
+    try {
+      if (!image) return assets.default_img;
+
+      if (typeof image === "object" && image.url) {
+        return image.url.startsWith("http") ? image.url : assets.default_img;
+      }
+
+      if (typeof image === "string") {
+        return assets[image] || assets.default_img;
+      }
+
+      return assets.default_img;
+    } catch (error) {
+      return assets.default_img;
+    }
+  };
 
   // Zoom effect handlers
   const handleMouseMove = (e) => {
@@ -34,13 +83,13 @@ const Product = () => {
     setZoomStyle({});
   };
 
-  // Fetch product data
   const fetchProductData = async () => {
-    const product = products.find((p) => p._id === id);
+    const product = products.find((product) => product._id === id);
     if (product) {
       const normalizedImages = Array.isArray(product.image)
         ? product.image
         : [product.image];
+
       setProductData({ ...product, image: normalizedImages });
       setMainImage(normalizedImages[0]);
     }
@@ -55,9 +104,7 @@ const Product = () => {
   return (
     <>
       <Navbar />
-
       <div className="px-6 md:px-16 lg:px-32 pt-14 space-y-10">
-        {/* Main product info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           {/* Image Gallery Section */}
           <div className="px-5 lg:px-16 xl:px-20">
@@ -107,12 +154,13 @@ const Product = () => {
 
           {/* Product Details Section */}
           <div className="flex flex-col">
-            {/* Product Title & Rating */}
+            {/* Product Title and Rating */}
             <div className="border-b pb-6">
               <h1 className="text-3xl font-semibold text-gray-900 mb-3">
                 {productData.name}
               </h1>
-              {/* Star Rating */}
+
+              {/* Rating Section */}
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-0.5">
                   {[...Array(5)].map((_, index) => {
@@ -135,9 +183,10 @@ const Product = () => {
                             "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
                         }}
                       >
-                        {/* Gray background */}
+                        {/* Gray background for inactive star */}
                         <div className="absolute inset-0 bg-gray-200" />
-                        {/* Yellow overlay */}
+
+                        {/* Yellow overlay for active portion */}
                         <div
                           className="absolute inset-y-0 left-0 bg-yellow-400 transition-all duration-200"
                           style={{ width: `${fillWidth}%` }}
@@ -154,7 +203,7 @@ const Product = () => {
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Pricing Section */}
             <div className="py-6 border-b">
               <div className="flex items-baseline gap-3">
                 <p className="text-4xl font-bold text-gray-900">
@@ -163,7 +212,8 @@ const Product = () => {
                     ? productData.offerPrice.toFixed(2)
                     : productData.price.toFixed(2)}
                 </p>
-                {/* Original price & discount */}
+
+                {/* Display original price and discount only if offerPrice exists */}
                 {productData.offerPrice && (
                   <>
                     <p className="text-xl text-gray-400 line-through">
@@ -207,6 +257,7 @@ const Product = () => {
                     {productData.category}
                   </span>
                 </div>
+
                 <div className="flex justify-between">
                   <span className="text-gray-600">Unit</span>
                   <span className="text-gray-900 font-medium capitalize">
@@ -237,13 +288,94 @@ const Product = () => {
           </div>
         </div>
 
-        <SuggestedProductsSection
-          products={products}
-          currentProductId={productData._id}
-          category={productData.category}
-        />
-      </div>
+        {/* Featured Products Section */}
+        <div className="py-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-semibold text-gray-900">
+              Related Products
+            </h2>
+            <p className="text-gray-600 mt-2">
+              You might also like these products
+            </p>
+          </div>
 
+          <div className="relative">
+            {/* Navigation Arrows */}
+            {suggestedProducts.length > PRODUCTS_PER_PAGE && (
+              <div className="absolute inset-y-0 w-full flex items-center justify-between pointer-events-none">
+                <button
+                  onClick={handlePrev}
+                  disabled={currentPage === 0}
+                  className={`bg-white shadow-lg rounded-full p-3 pointer-events-auto ${
+                    currentPage === 0
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:shadow-xl"
+                  } transition-all`}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={currentPage >= totalPages - 1}
+                  className={`bg-white shadow-lg rounded-full p-3 pointer-events-auto ${
+                    currentPage >= totalPages - 1
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:shadow-xl"
+                  } transition-all`}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 relative">
+              {paginatedProducts.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+
+            {/* Pagination Dots */}
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-8">
+                {Array.from({ length: totalPages }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPage(index)}
+                    className={`w-3 h-3 rounded-full ${
+                      index === currentPage ? "bg-gray-900" : "bg-gray-300"
+                    } transition-colors`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       <Footer />
     </>
   );

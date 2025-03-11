@@ -52,7 +52,7 @@ const HomeProducts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div id="products" className="min-h-screen bg-gray-50">
       {/* Title Section */}
       <div className="text-center py-8">
         <h2 className="text-4xl font-bold text-gray-800 mb-2">Our Products</h2>

@@ -74,24 +74,19 @@ export const AppContextProvider = (props) => {
   };
 
   const getCartCount = () => {
-    let totalCount = 0;
-    for (const items in cartItems) {
-      if (cartItems[items] > 0) {
-        totalCount += cartItems[items];
-      }
-    }
-    return totalCount;
+    return Object.keys(cartItems).filter(itemId => cartItems[itemId] > 0).length;
   };
 
   const getCartAmount = () => {
     let totalAmount = 0;
-    for (const items in cartItems) {
-      let itemInfo = products.find((product) => product._id === items);
-      if (cartItems[items] > 0) {
-        totalAmount += itemInfo.offerPrice * cartItems[items];
+    for (const itemId in cartItems) {
+      const product = products.find(p => p._id === itemId);
+      if (product && cartItems[itemId] > 0) {
+        const price = product.offerPrice || product.price;
+        totalAmount += price * cartItems[itemId];
       }
     }
-    return Math.floor(totalAmount * 100) / 100;
+    return totalAmount;
   };
 
   useEffect(() => {
