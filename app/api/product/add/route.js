@@ -45,7 +45,6 @@ export const POST = async (req) => {
         ? parseFloat(formData.get("offerPrice"))
         : null,
       unit: formData.get("unit") || "kg", // Default to kg
-      rating: 4.5, // Default rating
     };
 
     // Image handling

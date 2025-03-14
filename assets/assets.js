@@ -22,8 +22,6 @@ import redirect_icon from "./redirect_icon.svg";
 import star_dull_icon from "./star_dull_icon.svg";
 import upload_area from "./upload_area.png";
 import checkmark from "./checkmark.png";
-import annais_meal from "./annais_meat.png"
-import abdel_meal from "./abdel_meat.png"
 import abdel_oven from "./abdel_oven.png"
 
 // Product Images
@@ -53,6 +51,19 @@ import VegetablesFruitsHeader from "./VegetablesFruitsHeader.png"
 import KitchenToolsHeader from "./KitchenToolsHeader.png"
 import WoodOvensHeader from "./WoodOvensHeader.png"
 
+//About us import
+import ShopFront from "./aboutUs/shop-front.jpg"
+import FamilyButchers from "./aboutUs/family-butchers.jpg"
+import ArtisanButchery from "./aboutUs/ArtisanButchery.jpg"
+import PremiumSelection from "./aboutUs/PremiumSelection.jpg"
+import ExpertGuidance from "./aboutUs/ExpertGuidance.jpg"
+import abdel_meal from "./aboutUs/abdel_meat.png"
+import annais_meal from "./aboutUs/annais_meat.png"
+import iconGoogleMaps from "./aboutUs/icon-google-maps.svg"
+
+//Contact us import
+import ContactHero from "./contactUs/ContactHero.jpg"
+
 //products import
 import default_img from "./products_img/default-product.png"
 import spicy_sausage from "./products_img/spicy_sausage.png"
@@ -63,7 +74,6 @@ import sparkling_water from "./products_img/sparkling_water.jpg"
 import fresh_apples from "./products_img/fresh_apples.jpg"
 import organic_carrots from "./products_img/organic_carrots.png"
 import electric_oven from "./products_img/electric_oven.png"
-
 
 
 
@@ -88,13 +98,24 @@ export const assets = {
   arrow_icon_white,
   heart_icon,
   star_icon,
-  redirect_icon,
+redirect_icon,
   star_dull_icon,
   upload_area,
   checkmark,
-  annais_meal,
-  abdel_meal,
   abdel_oven,
+
+  //About us
+  ShopFront,
+  FamilyButchers,
+  ArtisanButchery,
+  PremiumSelection,
+  ExpertGuidance,
+  abdel_meal,
+  annais_meal,
+  iconGoogleMaps,
+
+  //Contact us
+  ContactHero,
 
   //Header Images
   meatsHeader,
@@ -215,7 +236,6 @@ export const productsDummyData = [
       "PremiumAngusBeefSteak_image4"
     ],
     "category": "BEEF",
-    "rating": 4.8,
     "unit": "kg",
     "date": 1738667236865,
     "__v": 0
@@ -228,7 +248,6 @@ export const productsDummyData = [
     "price": 18.5,
     "image": ["lamb_chops"],
     "category": "LAMB",
-    "rating": 4.7,
     "unit": "kg",
     "date": 1738667310300,
     "__v": 0
@@ -241,7 +260,6 @@ export const productsDummyData = [
     "price": 9.99,
     "image": ["chicken_breast"],
     "category": "POULTRY",
-    "rating": 4.6,
     "unit": "kg",
     "date": 1738667366224,
     "__v": 0
@@ -254,7 +272,6 @@ export const productsDummyData = [
     "price": 12.99,
     "image": ["spicy_sausage"],
     "category": "SAUSAGE",
-    "rating": 4.7,
     "unit": "kg",
     "date": 1738667503075,
     "__v": 0
@@ -267,7 +284,6 @@ export const productsDummyData = [
     "price": 29.99,
     "image": ["cold_cuts"],
     "category": "COLD CUTS",
-    "rating": 4.5,
     "unit": "pack",
     "date": 1738667788883,
     "__v": 0
@@ -280,7 +296,6 @@ export const productsDummyData = [
     "price": 8.99,
     "image": ["gourmet_deli_sandwich"],
     "category": "DELI",
-    "rating": 4.8,
     "unit": "piece",
     "date": 1738667977644,
     "__v": 0
@@ -293,7 +308,6 @@ export const productsDummyData = [
     "price": 49.99,
     "image": ["bbq_pack"],
     "category": "BBQ PACK",
-    "rating": 4.9,
     "unit": "pack",
     "date": 1738668086331,
     "__v": 0
@@ -306,7 +320,6 @@ export const productsDummyData = [
     "price": 1.99,
     "image": ["sparkling_water"],
     "category": "DRINKS",
-    "rating": 4.2,
     "unit": "bottle",
     "date": 1738668200000,
     "__v": 0
@@ -319,7 +332,6 @@ export const productsDummyData = [
     "price": 3.99,
     "image": ["fresh_apples"],
     "category": "FRUITS",
-    "rating": 4.3,
     "unit": "kg",
     "date": 1738668300000,
     "__v": 0
@@ -332,7 +344,6 @@ export const productsDummyData = [
     "price": 2.99,
     "image": ["organic_carrots"],
     "category": "VEGETABLES",
-    "rating": 4.5,
     "unit": "kg",
     "date": 1738668400000,
     "__v": 0
@@ -345,7 +356,6 @@ export const productsDummyData = [
     "price": 199.99,
     "image": ["electric_oven"],
     "category": "OVENS",
-    "rating": 4.7,
     "unit": "unit",
     "date": 1738668500000,
     "__v": 0
@@ -358,7 +368,6 @@ export const productsDummyData = [
     "price": 89.99,
     "image": ["chefs_knife"],
     "category": "KITCHENE TOOLS",
-    "rating": 4.7,
     "unit": "piece",
     "date": 1738668600000,
     "__v": 0
@@ -373,7 +382,6 @@ export const productsDummyData = [
     "offerPrice": 79.99,
     "image": [],
     "category": "BEEF",
-    "rating": 4.8,
     "unit": "kg"
   },
   {
@@ -384,7 +392,6 @@ export const productsDummyData = [
     "offerPrice": 55.00,
     "image": [],
     "category": "BEEF",
-    "rating": 4.7,
     "unit": "kg"
   },
 
@@ -397,7 +404,6 @@ export const productsDummyData = [
     "offerPrice": 37.99,
     "image": [],
     "category": "LAMB",
-    "rating": 4.6,
     "unit": "kg"
   },
   {
@@ -407,7 +413,6 @@ export const productsDummyData = [
     "price": 19.99,
     "image": [],
     "category": "LAMB",
-    "rating": 4.5,
     "unit": "kg"
   },
 
@@ -420,7 +425,6 @@ export const productsDummyData = [
     "offerPrice": 7.49,
     "image": [],
     "category": "POULTRY",
-    "rating": 4.4,
     "unit": "kg"
   },
   {
@@ -430,7 +434,6 @@ export const productsDummyData = [
     "price": 22.50,
     "image": [],
     "category": "POULTRY",
-    "rating": 4.7,
     "unit": "kg"
   },
 
@@ -443,7 +446,6 @@ export const productsDummyData = [
     "offerPrice": 12.99,
     "image": [],
     "category": "SAUSAGE",
-    "rating": 4.6,
     "unit": "kg"
   },
   {
@@ -453,7 +455,6 @@ export const productsDummyData = [
     "price": 18.75,
     "image": [],
     "category": "SAUSAGE",
-    "rating": 4.3,
     "unit": "kg"
   },
 
@@ -466,7 +467,6 @@ export const productsDummyData = [
     "offerPrice": 39.99,
     "image": [],
     "category": "COLD CUTS",
-    "rating": 4.8,
     "unit": "pack"
   },
   {
@@ -476,7 +476,6 @@ export const productsDummyData = [
     "price": 28.50,
     "image": [],
     "category": "COLD CUTS",
-    "rating": 4.5,
     "unit": "pack"
   },
 
@@ -489,7 +488,6 @@ export const productsDummyData = [
     "offerPrice": 2.99,
     "image": [],
     "category": "DRINKS",
-    "rating": 4.6,
     "unit": "bottle"
   },
 
@@ -501,7 +499,6 @@ export const productsDummyData = [
     "price": 6.99,
     "image": [],
     "category": "FRUITS",
-    "rating": 4.4,
     "unit": "kg"
   },
 
@@ -514,7 +511,6 @@ export const productsDummyData = [
     "offerPrice": 109.99,
     "image": [],
     "category": "KITCHENE TOOLS",
-    "rating": 4.9,
     "unit": "piece"
   }
 ];

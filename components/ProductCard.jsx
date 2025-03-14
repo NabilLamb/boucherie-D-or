@@ -7,9 +7,6 @@ const ProductCard = ({ product }) => {
   const { currency, router } = useAppContext();
   const [isLiked, setIsLiked] = React.useState(false);
 
-  // Calculate star rating
-  const fullStars = Math.floor(product.rating);
-  const partialStar = product.rating - fullStars;
 
   // Handle image source correctly
   const getImageSource = () => {
@@ -99,7 +96,7 @@ const ProductCard = ({ product }) => {
         {/* Category, SubCategory & Unit */}
         <div className="flex justify-between items-center text-xs text-gray-500">
           <span className="truncate">
-            {product.category} / {product.subCategory}
+            {product.category}
           </span>
           <span>{product.unit}</span>
         </div>
@@ -111,44 +108,6 @@ const ProductCard = ({ product }) => {
         <p className="text-sm text-gray-600 line-clamp-2 h-12">
           {product.description}
         </p>
-
-        {/* Rating Section */}
-        <div className="flex items-center gap-1.5">
-          <div className="flex gap-1">
-            {[...Array(5)].map((_, index) => {
-              const isFull = index < fullStars;
-              const isPartial = index === fullStars && partialStar > 0;
-              const fillWidth = isFull
-                ? 100
-                : isPartial
-                ? partialStar * 100
-                : 0;
-
-              return (
-                <div
-                  key={index}
-                  className="relative w-4 h-4 overflow-hidden"
-                  style={{
-                    clipPath:
-                      "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-                  }}
-                >
-                  {/* Gray background for inactive star */}
-                  <div className="absolute inset-0 bg-gray-200" />
-
-                  {/* Yellow overlay for active portion */}
-                  <div
-                    className="absolute inset-y-0 left-0 bg-yellow-400 transition-all duration-200"
-                    style={{ width: `${fillWidth}%` }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <span className="text-xs text-gray-500">
-            ({product.rating.toFixed(1)})
-          </span>
-        </div>
 
         {/* Price Section */}
         <div className="flex flex-col gap-1 pt-2">

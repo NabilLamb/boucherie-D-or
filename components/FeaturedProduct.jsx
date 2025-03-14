@@ -48,7 +48,7 @@ const FeaturedProduct = () => {
   };
 
   return (
-    <div className="mt-14 bg-gray-50 py-20 px-4">
+    <div id="featuredProducts" className="mt-14 bg-gray-50 py-20 px-4">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

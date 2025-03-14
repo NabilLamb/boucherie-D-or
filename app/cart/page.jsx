@@ -6,7 +6,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
 import { getImageSource } from "@/utils/images";
-// Reuse the same image helper from your Product page
+import Link from "next/link";
 
 const Cart = () => {
   const {
@@ -18,39 +18,47 @@ const Cart = () => {
     getCartCount,
   } = useAppContext();
 
+  const getQuantityConfig = (product) => {
+    const unit = product.unit?.toLowerCase() || 'piece';
+    const isWeight = unit.includes('kg') || unit.includes('g');
+    const isDecimalAllowed = isWeight;
+    const step = isWeight ? 0.1 : 1;
+    const min = isWeight ? 0.1 : 1;
+    
+    return { isDecimalAllowed, step, min };
+  };
+
   return (
     <>
       <Navbar />
-      <div className="flex flex-col md:flex-row gap-10 px-6 md:px-16 lg:px-32 pt-14 mb-20">
+      <div className="flex flex-col lg:flex-row gap-8 px-4 md:px-8 lg:px-12 xl:px-20 pt-8 pb-16">
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-8 border-b border-gray-500/30 pb-6">
-            <p className="text-2xl md:text-3xl text-gray-500">
-              Your <span className="font-medium text-orange-600">Cart</span>
-            </p>
-            <p className="text-lg md:text-xl text-gray-500/80">
-              {getCartCount()} Items
-            </p>
+          <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Shopping Cart ({getCartCount()})
+            </h1>
+            <button
+              onClick={() => router.push("/#products")}
+              className="flex items-center gap-2 text-orange-600 hover:text-orange-700 transition-colors"
+            >
+              <span>Continue Shopping</span>
+              <Image
+                src={assets.arrow_right_icon_colored}
+                alt="Continue shopping"
+                className="w-4 h-4"
+              />
+            </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto">
-              <thead className="text-left">
+          {/* Desktop Table */}
+          <div className="hidden md:block">
+            <table className="w-full">
+              <thead className="border-b border-gray-200">
                 <tr>
-                  <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
-                    Product Details
-                  </th>
-                  <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
-                    Price
-                  </th>
-                  <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
-                    Quantity
-                  </th>
-                  <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
-                    Unit
-                  </th>
-                  <th className="pb-6 md:px-4 px-1 text-gray-600 font-medium">
-                    Subtotal
-                  </th>
+                  <th className="pb-4 text-left text-gray-600 font-medium">Product</th>
+                  <th className="pb-4 text-center text-gray-600 font-medium">Price</th>
+                  <th className="pb-4 text-center text-gray-600 font-medium">Quantity</th>
+                  <th className="pb-4 text-right text-gray-600 font-medium">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,89 +66,91 @@ const Cart = () => {
                   const product = products.find((p) => p._id === itemId);
                   if (!product || cartItems[itemId] <= 0) return null;
 
-                  // Use offerPrice if it exists, otherwise price
                   const finalPrice = product.offerPrice ?? product.price;
+                  const { isDecimalAllowed, step, min } = getQuantityConfig(product);
 
                   return (
-                    <tr key={itemId}>
-                      <td className="flex items-center gap-4 py-4 md:px-4 px-1">
-                        <div>
-                          <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2">
-                            <Image
-                              src={getImageSource(product.image[0])}
-                              alt={product.name}
-                              className="w-16 h-auto object-cover mix-blend-multiply"
-                              width={1280}
-                              height={720}
-                              onError={(e) => {
-                                e.currentTarget.src = getImageSource(null);
-                              }}
-                            />
+                    <tr key={itemId} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-4">
+                        <div className="flex items-center gap-4">
+                          <Link 
+                            href={`/product/${product._id}`}
+                            className="shrink-0"
+                          >
+                            <div className="w-20 h-20 rounded-lg bg-gray-100 p-2 hover:shadow-md transition-shadow">
+                              <Image
+                                src={getImageSource(product.image[0])}
+                                alt={product.name}
+                                width={80}
+                                height={80}
+                                className="w-full h-full object-contain mix-blend-multiply"
+                              />
+                            </div>
+                          </Link>
+                          <div>
+                            <Link
+                              href={`/product/${product._id}`}
+                              className="font-medium text-gray-900 hover:text-orange-600 transition-colors"
+                            >
+                              {product.name}
+                            </Link>
+                            <p className="text-sm text-gray-500 mt-1">{product.unit}</p>
+                            <button
+                              onClick={() => updateCartQuantity(product._id, 0)}
+                              className="text-xs text-red-600 hover:text-red-700 mt-2 flex items-center gap-1"
+                            >
+                              <Image src={assets.remove_icon} alt="Remove" className="w-3 h-3" />
+                              Remove
+                            </button>
                           </div>
                         </div>
-                        <div className="text-sm hidden md:block">
-                          <p className="text-gray-800">{product.name}</p>
-                          <button
-                            className="text-xs text-orange-600 mt-1"
-                            onClick={() => updateCartQuantity(product._id, 0)}
-                          >
-                            Remove
-                          </button>
-                        </div>
                       </td>
-
-                      {/* Price column */}
-                      <td className="py-4 md:px-4 px-1 text-gray-600">
+                      
+                      <td className="py-4 text-center text-gray-900">
                         €{finalPrice.toFixed(2)}
                       </td>
 
-                      {/* Quantity column */}
-                      <td className="py-4 md:px-4 px-1">
-                        <div className="flex items-center md:gap-2 gap-1">
+                      <td className="py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() =>
-                              updateCartQuantity(
-                                product._id,
-                                cartItems[itemId] - 1
-                              )
-                            }
-                            disabled={cartItems[itemId] <= 1}
-                            className="disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Image
-                              src={assets.decrease_arrow}
-                              alt="decrease_arrow"
-                              className="w-4 h-4"
-                            />
-                          </button>
-                          <input
-                            onChange={(e) => {
+                            onClick={() => {
                               const newValue = Math.max(
-                                1,
-                                Number(e.target.value)
-                              ); // Ensure minimum value of 1
+                                min,
+                                Number((cartItems[itemId] - step).toFixed(1)
+                              );
                               updateCartQuantity(product._id, newValue);
                             }}
+                            className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-gray-100"
+                          >
+                            −
+                          </button>
+                          <input
                             type="number"
-                            min={1}
                             value={cartItems[itemId]}
-                            className="w-8 border text-center appearance-none"
+                            min={min}
+                            step={step}
+                            onChange={(e) => {
+                              const newValue = Math.max(
+                                min,
+                                Number(e.target.value)
+                              );
+                              updateCartQuantity(product._id, newValue);
+                            }}
+                            className="w-20 px-2 py-1 border rounded text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
-                          <button onClick={() => addToCart(product._id)}>
-                            <Image
-                              src={assets.increase_arrow}
-                              alt="increase_arrow"
-                              className="w-4 h-4"
-                            />
+                          <button
+                            onClick={() => {
+                              const newValue = Number((cartItems[itemId] + step).toFixed(1));
+                              updateCartQuantity(product._id, newValue);
+                            }}
+                            className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-gray-100"
+                          >
+                            +
                           </button>
                         </div>
                       </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">
-                        {product.unit}
-                      </td>
 
-                      {/* Subtotal column */}
-                      <td className="py-4 md:px-4 px-1 text-gray-600">
+                      <td className="py-4 text-right text-gray-900 font-medium">
                         €{(finalPrice * cartItems[itemId]).toFixed(2)}
                       </td>
                     </tr>
@@ -150,20 +160,100 @@ const Cart = () => {
             </table>
           </div>
 
-          <button
-            onClick={() => router.push("/#products")}
-            className="group flex items-center mt-6 gap-2 text-orange-600"
-          >
-            <Image
-              className="group-hover:-translate-x-1 transition"
-              src={assets.arrow_right_icon_colored}
-              alt="arrow_right_icon_colored"
-            />
-            Continue Shopping
-          </button>
+          {/* Mobile List */}
+          <div className="md:hidden space-y-6">
+            {Object.keys(cartItems).map((itemId) => {
+              const product = products.find((p) => p._id === itemId);
+              if (!product || cartItems[itemId] <= 0) return null;
+
+              const finalPrice = product.offerPrice ?? product.price;
+              const { isDecimalAllowed, step, min } = getQuantityConfig(product);
+
+              return (
+                <div key={itemId} className="border-b border-gray-100 pb-6">
+                  <div className="flex gap-4">
+                    <Link 
+                      href={`/product/${product._id}`}
+                      className="shrink-0"
+                    >
+                      <div className="w-20 h-20 rounded-lg bg-gray-100 p-2">
+                        <Image
+                          src={getImageSource(product.image[0])}
+                          alt={product.name}
+                          width={80}
+                          height={80}
+                          className="w-full h-full object-contain mix-blend-multiply"
+                        />
+                      </div>
+                    </Link>
+                    <div className="flex-1">
+                      <Link
+                        href={`/product/${product._id}`}
+                        className="font-medium text-gray-900 hover:text-orange-600"
+                      >
+                        {product.name}
+                      </Link>
+                      <p className="text-sm text-gray-500 mt-1">{product.unit}</p>
+                      <p className="text-lg font-medium mt-2">
+                        €{(finalPrice * cartItems[itemId]).toFixed(2)}
+                      </p>
+                      
+                      <div className="flex items-center gap-4 mt-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              const newValue = Math.max(
+                                min,
+                                Number((cartItems[itemId] - step).toFixed(1)
+                              );
+                              updateCartQuantity(product._id, newValue);
+                            }}
+                            className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-gray-100"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            value={cartItems[itemId]}
+                            min={min}
+                            step={step}
+                            onChange={(e) => {
+                              const newValue = Math.max(
+                                min,
+                                Number(e.target.value)
+                              );
+                              updateCartQuantity(product._id, newValue);
+                            }}
+                            className="w-20 px-2 py-1 border rounded text-center [appearance:textfield]"
+                          />
+                          <button
+                            onClick={() => {
+                              const newValue = Number((cartItems[itemId] + step).toFixed(1));
+                              updateCartQuantity(product._id, newValue);
+                            }}
+                            className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-gray-100"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => updateCartQuantity(product._id, 0)}
+                          className="text-red-600 hover:text-red-700 flex items-center gap-1 ml-auto"
+                        >
+                          <Image src={assets.remove_icon} alt="Remove" className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <OrderSummary />
+        <div className="lg:w-96">
+          <OrderSummary />
+        </div>
       </div>
     </>
   );

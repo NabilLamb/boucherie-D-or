@@ -19,7 +19,7 @@ const Banner = () => {
         <Image
           src={assets.PremiumAngusBeefSteak_image}
           alt="Premium Angus Beef"
-          className="rotate-[-15deg] hover:rotate-0 transition-transform duration-300"
+          className="w-64 rotate-[-15deg] hover:rotate-0 transition-transform duration-300"
         />
       </motion.div>
 

@@ -29,12 +29,6 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    rating: {
-        type: Number,
-        min: 0,
-        max: 5,
-        default: 0
-    },
     unit: {
         type: String,
         required: true,
