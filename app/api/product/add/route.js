@@ -2,7 +2,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { getAuth } from "@clerk/nextjs/server";
 import authSeller from "@/lib/authSeller";
 import Product from "@/models/Product";
-import { connectDB } from "@/config/db";
+import connectDB from "@/config/db";
 import { NextResponse } from "next/server";
 
 cloudinary.config({
@@ -13,6 +13,7 @@ cloudinary.config({
 
 export const POST = async (req) => {
   try {
+    // Authentication and Authorization
     const { userId } = getAuth(req);
     const isSeller = await authSeller(userId);
     if (!isSeller) {
@@ -22,32 +23,49 @@ export const POST = async (req) => {
       );
     }
 
+    // Form Data Handling
     const formData = await req.formData();
 
     // Validate required fields
-    const requiredFields = ["name", "description", "category", "price"];
-    for (const field of requiredFields) {
-      if (!formData.get(field)) {
-        return NextResponse.json(
-          { success: false, message: `${field} is required` },
-          { status: 400 }
-        );
-      }
+    const requiredFields = ["name", "description", "category", "price", "unit"];
+    const missingFields = requiredFields.filter(field => !formData.get(field));
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Missing required fields: ${missingFields.join(", ")}`
+        },
+        { status: 400 }
+      );
     }
 
-    // Parse product data
+    // Price Validation
+    const price = parseFloat(formData.get("price"));
+    const offerPrice = formData.get("offerPrice")
+      ? parseFloat(formData.get("offerPrice"))
+      : null;
+
+    if (offerPrice && offerPrice >= price) {
+      return NextResponse.json(
+        { success: false, message: "Offer price must be lower than regular price" },
+        { status: 400 }
+      );
+    }
+
+    // Prepare product data
     const productData = {
-      name: formData.get("name"),
-      description: formData.get("description"),
-      category: formData.get("category"),
-      price: parseFloat(formData.get("price")),
-      offerPrice: formData.get("offerPrice")
-        ? parseFloat(formData.get("offerPrice"))
-        : null,
-      unit: formData.get("unit") || "kg", // Default to kg
+      name: formData.get("name").trim(),
+      description: formData.get("description").trim(),
+      category: formData.get("category").trim(),
+      price,
+      offerPrice,
+      unit: formData.get("unit"),
+      userId,
+      date: Date.now(),
     };
 
-    // Image handling
+    // Image Handling
     const files = formData.getAll("images");
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -56,36 +74,52 @@ export const POST = async (req) => {
       );
     }
 
+    // Validate image count
+    if (files.length > 4) {
+      return NextResponse.json(
+        { success: false, message: "Maximum 4 images allowed" },
+        { status: 400 }
+      );
+    }
+
     // Upload images to Cloudinary
     const imageUploads = await Promise.all(
       files.map(async (file) => {
-        const arrayBuffer = await file.arrayBuffer();
-        return new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            { resource_type: "auto" },
-            (error, result) =>
-              error ? reject(error) : resolve(result)
-          );
-          stream.end(Buffer.from(arrayBuffer));
-        });
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          return new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { resource_type: "image" },
+              (error, result) => error ? reject(error) : resolve(result)
+            );
+            stream.end(Buffer.from(arrayBuffer));
+          });
+        } catch (error) {
+          console.error("Image upload error:", error);
+          throw new Error("Failed to upload one or more images");
+        }
       })
     );
 
+    // Extract image URLs
     const imageUrls = imageUploads.map((result) => result.secure_url);
 
     // Database operations
     await connectDB();
     const newProduct = await Product.create({
       ...productData,
-      images: imageUrls,
-      userId,
-      date: Date.now(),
+      image: imageUrls,
     });
 
     return NextResponse.json(
-      { success: true, product: newProduct },
+      {
+        success: true,
+        message: "Product created successfully",
+        product: newProduct
+      },
       { status: 201 }
     );
+
   } catch (error) {
     console.error("Error creating product:", error);
     return NextResponse.json(

@@ -25,10 +25,10 @@ import checkmark from "./checkmark.png";
 import abdel_oven from "./abdel_oven.png"
 
 // Product Images
-import PremiumAngusBeefSteak_image from "./PremiumAngusBeefSteak_image.png";
-import PremiumAngusBeefSteak_image1 from "./PremiumAngusBeefSteak_image1.png";
-import PremiumAngusBeefSteak_image2 from "./PremiumAngusBeefSteak_image2.png";
-import PremiumAngusBeefSteak_image3 from "./PremiumAngusBeefSteak_image3.png";
+import PremiumAngusBeefSteak_image from "./products_img/PremiumAngusBeefSteak_image.png";
+import PremiumAngusBeefSteak_image1 from "./products_img/PremiumAngusBeefSteak_image1.png";
+import PremiumAngusBeefSteak_image2 from "./products_img/PremiumAngusBeefSteak_image2.png";
+import PremiumAngusBeefSteak_image3 from "./products_img/PremiumAngusBeefSteak_image3.png";
 import PremiumAngusBeefSteak_image4 from "./PremiumAngusBeefSteak_image4.png";
 import lamb_chops from "./lamb_chops.png";
 import chicken_breast from "./chicken_breast.png";
@@ -98,7 +98,7 @@ export const assets = {
   arrow_icon_white,
   heart_icon,
   star_icon,
-redirect_icon,
+  redirect_icon,
   star_dull_icon,
   upload_area,
   checkmark,
@@ -161,16 +161,16 @@ redirect_icon,
 // Updated icons with className prop and better size control
 export const CartIcon = ({ className = "w-6 h-6" }) => {
   return (
-    <svg 
-      viewBox="0 0 18 18" 
-      fill="none" 
+    <svg
+      viewBox="0 0 18 18"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`${className} stroke-gray-600`}
     >
-      <path d="M0.75 0.75H3.75L5.76 10.7925C5.82858 11.1378 6.01643 11.448 6.29066 11.6687C6.56489 11.8895 6.90802 12.0067 7.26 12H14.55C14.902 12.0067 15.2451 11.8895 15.5193 11.6687C15.7936 11.448 15.9814 11.1378 16.05 10.7925L17.25 4.5H4.5M7.5 15.75C7.5 16.1642 7.16421 16.5 6.75 16.5C6.33579 16.5 6 16.1642 6 15.75C6 15.3358 6.33579 15 6.75 15C7.16421 15 7.5 15.3358 7.5 15.75ZM15.75 15.75C15.75 16.1642 15.4142 16.5 15 16.5C14.5858 16.5 14.25 16.1642 14.25 15.75C14.25 15.3358 14.5858 15 15 15C15.4142 15 15.75 15.3358 15.75 15.75Z" 
-        strokeWidth="1.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
+      <path d="M0.75 0.75H3.75L5.76 10.7925C5.82858 11.1378 6.01643 11.448 6.29066 11.6687C6.56489 11.8895 6.90802 12.0067 7.26 12H14.55C14.902 12.0067 15.2451 11.8895 15.5193 11.6687C15.7936 11.448 15.9814 11.1378 16.05 10.7925L17.25 4.5H4.5M7.5 15.75C7.5 16.1642 7.16421 16.5 6.75 16.5C6.33579 16.5 6 16.1642 6 15.75C6 15.3358 6.33579 15 6.75 15C7.16421 15 7.5 15.3358 7.5 15.75ZM15.75 15.75C15.75 16.1642 15.4142 16.5 15 16.5C14.5858 16.5 14.25 16.1642 14.25 15.75C14.25 15.3358 14.5858 15 15 15C15.4142 15 15.75 15.3358 15.75 15.75Z"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   )
@@ -178,16 +178,16 @@ export const CartIcon = ({ className = "w-6 h-6" }) => {
 
 export const BagIcon = ({ className = "w-6 h-6" }) => {
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="none" 
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
       className={`${className} stroke-gray-600`}
     >
-      <path 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        strokeWidth="1.5" 
-        d="M9 10V6a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v4m3-2 .917 11.923A1 1 0 0 1 17.92 21H6.08a1 1 0 0 1-.997-1.077L6 8h12Z" 
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        d="M9 10V6a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v4m3-2 .917 11.923A1 1 0 0 1 17.92 21H6.08a1 1 0 0 1-.997-1.077L6 8h12Z"
       />
     </svg>
   )
@@ -214,6 +214,12 @@ export const BoxIcon = () => (
 export const HomeIcon = () => (
   <svg className="w-5 h-5 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" >
     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" />
+  </svg>
+);
+
+export const successIcon = () => (
+  <svg width="24px" height="24px" viewBox="0 0 512 512" fill="#22c55e">
+    <path d="M213.333333,3.55271368e-14 C95.51296,3.55271368e-14 3.55271368e-14,95.51296 3.55271368e-14,213.333333 C3.55271368e-14,331.153707 95.51296,426.666667 213.333333,426.666667 C331.153707,426.666667 426.666667,331.153707 426.666667,213.333333 C426.666667,95.51296 331.153707,3.55271368e-14 213.333333,3.55271368e-14 Z M213.333333,384 C119.227947,384 42.6666667,307.43872 42.6666667,213.333333 C42.6666667,119.227947 119.227947,42.6666667 213.333333,42.6666667 C307.43872,42.6666667 384,119.227947 384,213.333333 C384,307.43872 307.438933,384 213.333333,384 Z M293.669333,137.114453 L323.835947,167.281067 L192,299.66912 L112.916693,220.585813 L143.083307,190.4192 L192,239.335893 L293.669333,137.114453 Z" />
   </svg>
 );
 

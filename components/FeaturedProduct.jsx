@@ -2,6 +2,7 @@ import React from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import Banner from "@/components/Banner";
 
 const products = [
   {
@@ -110,6 +111,8 @@ const FeaturedProduct = () => {
           </motion.div>
         ))}
       </motion.div>
+
+      <Banner />
     </div>
   );
 };

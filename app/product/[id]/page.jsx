@@ -16,6 +16,7 @@ const Product = () => {
   const [productData, setProductData] = useState(null);
   const [zoomStyle, setZoomStyle] = useState({});
   const imageRef = useRef(null);
+  const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -104,7 +105,7 @@ const Product = () => {
   return (
     <>
       <Navbar />
-      <div className="px-6 md:px-16 lg:px-32 pt-14 space-y-10">
+      <div className="px-6 md:px-16 lg:px-32 pt-20 space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           {/* Image Gallery Section */}
           <div className="px-5 lg:px-16 xl:px-20">
@@ -154,60 +155,20 @@ const Product = () => {
 
           {/* Product Details Section */}
           <div className="flex flex-col">
-            {/* Product Title and Rating */}
+            {/* Product Title */}
             <div className="border-b pb-6">
               <h1 className="text-3xl font-semibold text-gray-900 mb-3">
                 {productData.name}
               </h1>
 
-              {/* Rating Section */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-0.5">
-                  {[...Array(5)].map((_, index) => {
-                    const fullStars = Math.floor(productData.rating);
-                    const partialStar = productData.rating - fullStars;
-                    const isFull = index < fullStars;
-                    const isPartial = index === fullStars && partialStar > 0;
-                    const fillWidth = isFull
-                      ? 100
-                      : isPartial
-                      ? partialStar * 100
-                      : 0;
-
-                    return (
-                      <div
-                        key={index}
-                        className="relative w-5 h-5 overflow-hidden"
-                        style={{
-                          clipPath:
-                            "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-                        }}
-                      >
-                        {/* Gray background for inactive star */}
-                        <div className="absolute inset-0 bg-gray-200" />
-
-                        {/* Yellow overlay for active portion */}
-                        <div
-                          className="absolute inset-y-0 left-0 bg-yellow-400 transition-all duration-200"
-                          style={{ width: `${fillWidth}%` }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="text-sm text-gray-600">
-                  ({productData.rating?.toFixed(1) || "0.0"})
-                </p>
-                <span className="text-gray-400 mx-2">|</span>
-                <p className="text-sm text-gray-600">123 Reviews</p>
-              </div>
+             
             </div>
 
             {/* Pricing Section */}
             <div className="py-6 border-b">
               <div className="flex items-baseline gap-3">
                 <p className="text-4xl font-bold text-gray-900">
-                  €
+                  {currency}
                   {productData.offerPrice
                     ? productData.offerPrice.toFixed(2)
                     : productData.price.toFixed(2)}
@@ -217,7 +178,7 @@ const Product = () => {
                 {productData.offerPrice && (
                   <>
                     <p className="text-xl text-gray-400 line-through">
-                      €{productData.price.toFixed(2)}
+                      {currency}{productData.price.toFixed(2)}
                     </p>
                     <span className="bg-green-100 text-green-700 text-sm font-medium px-2 py-1 rounded">
                       {Math.round(

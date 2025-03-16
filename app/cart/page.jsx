@@ -27,10 +27,12 @@ const Cart = () => {
     updateCartQuantity(productId, Math.max(minQuantity, roundedQuantity));
   };
 
+  const currency = process.env.NEXT_PUBLIC_CURRENCY;
+
   return (
     <>
       <Navbar />
-      <div className="flex flex-col md:flex-row gap-10 px-4 md:px-8 lg:px-16 pt-8 mb-20 pt-24">
+      <div className="flex flex-col md:flex-row gap-10 px-4 md:px-8 lg:px-16 mb-20 pt-20">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-8 border-b border-gray-200 pb-6">
             <h1 className="text-2xl md:text-3xl font-semibold text-gray-800">
@@ -103,7 +105,7 @@ const Cart = () => {
                             </Link>
                             <button
                               onClick={() => updateCartQuantity(product._id, 0)}
-                              className="mt-1 text-sm text-red-600 hover:text-red-700 transition-colors"
+                              className="block mt-1 text-sm text-red-600 hover:text-red-700 transition-colors"
                             >
                               Remove
                             </button>
@@ -112,7 +114,7 @@ const Cart = () => {
                       </td>
 
                       <td className="py-6 px-6 text-center text-gray-700">
-                        €{finalPrice.toFixed(2)}
+                        {currency}{finalPrice.toFixed(2)}
                       </td>
 
                       <td className="py-6 px-6 text-center">
@@ -120,7 +122,7 @@ const Cart = () => {
                           <button
                             onClick={() => {
                               const newValue = Math.max(
-                                min,
+                                minQty,
                                 Number((cartItems[itemId] - step).toFixed(1))
                               );
                               updateCartQuantity(product._id, newValue);
@@ -162,7 +164,7 @@ const Cart = () => {
                       </td>
 
                       <td className="py-6 px-6 text-right text-gray-700 font-medium">
-                        €{(finalPrice * cartItems[itemId]).toFixed(2)}
+                        {currency}{(finalPrice * cartItems[itemId]).toFixed(2)}
                       </td>
                     </tr>
                   );
@@ -210,7 +212,7 @@ const Cart = () => {
                         {product.unit}
                       </p>
                       <p className="text-lg font-medium text-gray-800 mt-2">
-                        €{(finalPrice * cartItems[itemId]).toFixed(2)}
+                        {currency}{(finalPrice * cartItems[itemId]).toFixed(2)}
                       </p>
                     </div>
                   </div>

@@ -17,10 +17,7 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    offerPrice: {
-        type: Number,
-        required: false
-    },
+    offerPrice: Number,
     image: {
         type: [String],
         required: true
@@ -32,15 +29,14 @@ const productSchema = new mongoose.Schema({
     unit: {
         type: String,
         required: true,
-        enum: ["kg", "piece", "liter", "pack"],
+        enum: ["kg", "piece", "liter", "pack", "bottle", "box", "gram", "pound", "ounce", "carton"],
         default: "kg"
     },
     date: {
-        type: Number, // Store as timestamp (milliseconds)
+        type: Number,
         default: () => Date.now()
     },
 });
 
 const Product = mongoose.models.product || mongoose.model('product', productSchema);
-
 export default Product;

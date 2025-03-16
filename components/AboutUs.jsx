@@ -126,7 +126,7 @@ const AboutUs = () => {
       </section>
 
       {/* Our Butchers */}
-      <section className="py-16 bg-red-50">
+      <section id="team" className="py-16 bg-red-50">
         <div className="mx-auto max-w-7xl px-6 md:px-8 lg:px-16">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">

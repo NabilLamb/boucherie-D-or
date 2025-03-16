@@ -86,22 +86,6 @@ const OrderSummary = () => {
           </div>
         </div>
 
-        <div>
-          <label className="text-base font-medium uppercase text-gray-600 block mb-2">
-            Promo Code
-          </label>
-          <div className="flex flex-col items-start gap-3">
-            <input
-              type="text"
-              placeholder="Enter promo code"
-              className="flex-grow w-full outline-none p-2.5 text-gray-600 border"
-            />
-            <button className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700">
-              Apply
-            </button>
-          </div>
-        </div>
-
         <hr className="border-gray-500/30 my-5" />
 
         <div className="space-y-4">

@@ -269,7 +269,7 @@ const ContactSection = () => {
                 </div>
 
                 {/* Map */}
-                <div className="overflow-hidden rounded-xl shadow-2xl">
+                <div  id="map" className="overflow-hidden rounded-xl shadow-2xl">
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d92423.55032243805!2d4.8607425!3d44.1607017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12b599ffd3ed3369%3A0x4a976d91d4b4323c!2sBoucherie%20D&#39;or!5e0!3m2!1sen!2sfr!4v1718877416915!5m2!1sen!2sfr"
                     width="100%"
