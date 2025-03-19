@@ -77,7 +77,7 @@ const OrderSummary = () => {
       const { data } = await axios.post(
         "/api/order/create",
         {
-          address: selectedAddress,
+          address: selectedAddress._id,
           items: cartItemsArray,
         },
         {
@@ -121,7 +121,7 @@ const OrderSummary = () => {
             >
               <span>
                 {selectedAddress
-                  ? `${selectedAddress.fullName}, ${selectedAddress.area}, ${selectedAddress.city}, ${selectedAddress.state}`
+                  ? `${selectedAddress.fullName}, ${selectedAddress.city}, ${selectedAddress.postalCode}, ${selectedAddress.address}`
                   : "Select Address"}
               </span>
               <svg

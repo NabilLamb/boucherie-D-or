@@ -9,67 +9,44 @@ import connectDB from "@/config/db";
 
 export async function POST(request) {
     try {
-        await connectDB();
         const { userId } = getAuth(request);
         const { address, items } = await request.json();
 
-        // Validate address structure
-        const requiredFields = ['fullName', 'phone', 'postalCode', 'city', 'address'];
-        if (!address || !requiredFields.every(field => address[field])) {
-            return NextResponse.json(
-                { success: false, message: "Invalid address format" }, 
-                { status: 400 }
-            );
+        if (!address || items.length === 0) {
+            return NextResponse.json({ success: false, message: 'Invalid data' });
         }
 
-        // Calculate amount and verify products
-        let amount = 0;
-        const itemsWithPrices = await Promise.all(items.map(async (item) => {
+        //Calculate amount using items
+        const amount = await items.reduce(async (acc, item) => {
             const product = await Product.findById(item.product);
-            if (!product) throw new Error(`Product ${item.product} not found`);
-            
-            const price = product.offerPrice || product.price;
-            amount += price * item.quantity;
-            
-            return {
-                product: item.product,
-                quantity: item.quantity,
-                price: price
-            };
-        }));
+            if (product.offerPrice) {
+                return await acc + product.offerPrice * item.quantity;
+            } else {
+                return await acc + product.price * item.quantity;
+            }
+        }, 0);
 
-        // Create order through Inngest
         await inngest.send({
-            name: "order/created",
+            name: 'order/created',
             data: {
                 userId,
-                address: {
-                    fullName: address.fullName,
-                    phone: address.phone,
-                    postalCode: address.postalCode,
-                    city: address.city,
-                    address: address.address,
-                    additionalInfo: address.additionalInfo || ''
-                },
-                items: itemsWithPrices,
+                address,
+                items,
                 amount,
                 date: Date.now()
             }
         });
 
-        // Clear user cart
-        await User.findByIdAndUpdate(userId, { cartItems: {} });
+        // clear user cart
+        const user = await User.findById(userId);
+        user.cartItems = {};
+        await user.save();
 
-        return NextResponse.json({ 
-            success: true, 
-            message: "Order placed successfully" 
-        });
+        return NextResponse.json({ success: true, message: 'Order Placed' });
 
     } catch (error) {
-        console.error("Order creation error:", error);
-        return NextResponse.json(
-            { success: false, message: error.message }, 
-            { status: 500 }
-        );
+        console.log(error);
+        return NextResponse.json({ success: false, message: error.message });
+
     }
 }
