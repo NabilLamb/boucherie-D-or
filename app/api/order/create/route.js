@@ -4,51 +4,72 @@ import Product from "@/models/Product";
 import { NextResponse } from "next/server";
 import { inngest } from "@/config/inngest";
 import User from "@/models/user";
+import connectDB from "@/config/db";
 
 
 export async function POST(request) {
     try {
+        await connectDB();
         const { userId } = getAuth(request);
         const { address, items } = await request.json();
-        
-        if (!address || items.length === 0) {
-            return NextResponse.json({ success: false, message: "Invalid data" }, { status: 400 });
+
+        // Validate address structure
+        const requiredFields = ['fullName', 'phone', 'postalCode', 'city', 'address'];
+        if (!address || !requiredFields.every(field => address[field])) {
+            return NextResponse.json(
+                { success: false, message: "Invalid address format" }, 
+                { status: 400 }
+            );
         }
 
-        // Calculate amount using items
+        // Calculate amount and verify products
         let amount = 0;
-        for (const item of items) {
+        const itemsWithPrices = await Promise.all(items.map(async (item) => {
             const product = await Product.findById(item.product);
-            if (!product) {
-                return NextResponse.json(
-                    { success: false, message: `Product ${item.product} not found` },
-                    { status: 404 }
-                );
-            }
-            amount += (product.offerPrice || product.price) * item.quantity;
-        }
+            if (!product) throw new Error(`Product ${item.product} not found`);
+            
+            const price = product.offerPrice || product.price;
+            amount += price * item.quantity;
+            
+            return {
+                product: item.product,
+                quantity: item.quantity,
+                price: price
+            };
+        }));
 
-        // Create order
+        // Create order through Inngest
         await inngest.send({
             name: "order/created",
             data: {
                 userId,
-                address,
-                items,
+                address: {
+                    fullName: address.fullName,
+                    phone: address.phone,
+                    postalCode: address.postalCode,
+                    city: address.city,
+                    address: address.address,
+                    additionalInfo: address.additionalInfo || ''
+                },
+                items: itemsWithPrices,
                 amount,
                 date: Date.now()
             }
         });
 
         // Clear user cart
-        const user = await User.findById(userId);
-        user.cartItems = {}
-        await user.save();
+        await User.findByIdAndUpdate(userId, { cartItems: {} });
 
-        //Responce
-        return NextResponse.json({ success: true, message: "Order created" });
+        return NextResponse.json({ 
+            success: true, 
+            message: "Order placed successfully" 
+        });
 
     } catch (error) {
-        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+        console.error("Order creation error:", error);
+        return NextResponse.json(
+            { success: false, message: error.message }, 
+            { status: 500 }
+        );
     }
 }

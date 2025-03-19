@@ -75,21 +75,33 @@ export const createUserOrder = inngest.createFunction(
             timeout: '5s',
         }
     },
-    {
-        event: 'order/created'
-    },
-
+    { event: 'order/created' },
     async ({ events }) => {
-        const orders = events.map(event => {
-            return {
+        await connectDB();
+        
+        const orders = await Promise.all(events.map(async (event) => {
+            // Get current prices for products
+            const itemsWithPrices = await Promise.all(
+                event.data.items.map(async (item) => {
+                    const product = await Product.findById(item.product);
+                    return {
+                        product: item.product,
+                        quantity: item.quantity,
+                        price: product.offerPrice || product.price
+                    };
+                })
+            );
+
+            return new Order({
                 userId: event.data.userId,
                 address: event.data.address,
-                items: event.data.items,
+                items: itemsWithPrices,
                 amount: event.data.amount,
-                date: event.data.date
-            }
-        });
-        await connectDB();
+                status: 'pending',
+                date: new Date(event.data.date)
+            });
+        }));
+
         await Order.insertMany(orders);
         return { success: true, processed: orders.length };
     }
