@@ -16,7 +16,7 @@ const AddProduct = () => {
   const [files, setFiles] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Beef");
+  const [category, setCategory] = useState("BEEF");
   const [price, setPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [unit, setUnit] = useState("kg");
@@ -75,7 +75,7 @@ const AddProduct = () => {
         setFiles([]);
         setName("");
         setDescription("");
-        setCategory("Beef");
+        setCategory("BEEF");
         setPrice("");
         setOfferPrice("");
         setUnit("kg");

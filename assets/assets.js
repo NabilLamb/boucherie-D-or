@@ -223,6 +223,34 @@ export const successIcon = () => (
   </svg>
 );
 
+export const searchIcon = () => (
+  <svg
+    className="w-5 h-5 text-gray-400"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <line
+      x1="21"
+      y1="21"
+      x2="15"
+      y2="15"
+      stroke="rgb(44, 169, 188)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle
+      cx="10"
+      cy="10"
+      r="7"
+      stroke="rgb(0, 0, 0)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 
 
@@ -295,7 +323,7 @@ export const productsDummyData = [
     "__v": 0
   },
   {
-    "_id": "6",
+    "_id": "6",//
     "userId": "butcher_shop",
     "name": "Gourmet Deli Sandwich",
     "description": "A classic deli sandwich with premium ingredients",
@@ -343,7 +371,7 @@ export const productsDummyData = [
     "__v": 0
   },
   {
-    "_id": "10",
+    "_id": "10", //
     "userId": "butcher_shop",
     "name": "Organic Carrots",
     "description": "Freshly harvested organic carrots",
@@ -355,7 +383,7 @@ export const productsDummyData = [
     "__v": 0
   },
   {
-    "_id": "11",
+    "_id": "11",//
     "userId": "butcher_shop",
     "name": "Electric Oven 220V",
     "description": "High performance electric oven suitable for any kitchen",

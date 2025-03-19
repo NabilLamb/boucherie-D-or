@@ -1,16 +1,54 @@
-import { addressDummyData } from "@/assets/assets";
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
-
+import toast from "react-hot-toast";
+import axios from "axios";
 const OrderSummary = () => {
-  const { currency, router, getCartCount, getCartAmount } = useAppContext();
+  const {
+    currency,
+    router,
+    getCartCount,
+    getCartAmount,
+    getToken,
+    user,
+    cartItems,
+    setCartItems,
+  } = useAppContext();
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [userAddresses, setUserAddresses] = useState([]);
 
   const fetchUserAddresses = async () => {
-    setUserAddresses(addressDummyData);
+    try {
+      const token = await getToken();
+      const { data } = await axios.get("/api/user/get-address", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (data.success) {
+        const addresses = data.data || [];
+        setUserAddresses(addresses);
+
+        if (addresses.length > 0) {
+          setSelectedAddress(addresses[0]);
+        }
+        return addresses;
+      } else {
+        toast.error(data.message || "Failed to load addresses");
+        setUserAddresses([]);
+        return [];
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch addresses";
+      toast.error(errorMessage);
+      setUserAddresses([]);
+      return [];
+    }
   };
 
   const handleAddressSelect = (address) => {
@@ -18,11 +56,15 @@ const OrderSummary = () => {
     setIsDropdownOpen(false);
   };
 
-  const createOrder = async () => {};
+  const createOrder = async () => {
+
+  };
 
   useEffect(() => {
-    fetchUserAddresses();
-  }, []);
+    if(user) {
+      fetchUserAddresses();
+    }
+  }, [user]);
 
   return (
     <div className="w-full md:w-96 bg-gray-500/5 p-5">

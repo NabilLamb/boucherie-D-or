@@ -2,44 +2,12 @@ import React from "react";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import { assets } from "@/assets/assets";
-
+import { getImageSource } from "@/utils/images";
 const ProductCard = ({ product }) => {
   const { currency, router, addToCart } = useAppContext();
   const [isLiked, setIsLiked] = React.useState(false);
 
-  // Handle image source correctly
-  const getImageSource = () => {
-    try {
-      // Use default image from assets
-      const defaultImage = assets.default_img;
-
-      // If no image is provided, return default
-      if (!product.image || product.image.length === 0) return defaultImage;
-
-      // Handle both array and string formats
-      const imgSources = Array.isArray(product.image)
-        ? product.image
-        : [product.image];
-
-      // Find first valid image source
-      const validSource = imgSources.find((source) => {
-        if (typeof source === "string") {
-          return source.trim() !== "" && assets[source];
-        }
-        return source?.url?.trim() !== "";
-      });
-
-      // Return valid source or default
-      return validSource
-        ? assets[validSource] || validSource.url
-        : defaultImage;
-    } catch (error) {
-      console.error("Error processing image:", error);
-      return assets.default_img;
-    }
-  };
-
-  const imageSrc = getImageSource();
+  const imageSrc = getImageSource(product.image);
 
   // Toggle heart color
   const handleHeartClick = (e) => {
@@ -57,7 +25,7 @@ const ProductCard = ({ product }) => {
     >
       {/* Image Section */}
       <div className="relative w-full h-52 rounded-lg overflow-hidden bg-gray-50">
-        <Image
+      <Image
           src={imageSrc}
           alt={product.name}
           width={400}

@@ -3,171 +3,198 @@ import { assets } from "@/assets/assets";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
-import { useState } from "react";
+import { useAppContext } from "@/context/AppContext";
+import { useFormik } from 'formik';
+import { addressSchema } from '@/utils/addressSchema';
+import { formStyles } from '@/utils/formPatterns';
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const AddAddress = () => {
-    const [address, setAddress] = useState({
-        fullName: '',
-        phone: '',
-        postalCode: '',
-        streetNumber: '',
-        streetName: '',
-        apartment: '',
-        city: '',
-        region: '',
+    const { getToken, router } = useAppContext();
+
+    const formik = useFormik({
+        initialValues: {
+            fullName: '',
+            phone: '',
+            postalCode: '',
+            city: '',
+            address: '',
+            additionalInfo: '',
+        },
+        validationSchema: addressSchema,
+        onSubmit: async (values) => {
+            try {
+                const token = await getToken();
+                const formattedValues = {
+                    ...values,
+                    phone: values.phone.replace(/\s/g, '') // Remove spaces before sending
+                };
+
+                const { data } = await axios.post('/api/user/add-address', 
+                    { address: formattedValues },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                if (data.success) {
+                    toast.success(data.message);
+                    router.push('/cart');
+                } else {
+                    toast.error(data.message);
+                }
+            } catch (error) {
+                toast.error(error.response?.data?.message || error.message);
+            }
+        }
     });
 
-    const frenchRegions = [
-        "Auvergne-Rhône-Alpes",
-        "Bourgogne-Franche-Comté",
-        "Bretagne",
-        "Centre-Val de Loire",
-        "Corse",
-        "Grand Est",
-        "Hauts-de-France",
-        "Île-de-France",
-        "Normandie",
-        "Nouvelle-Aquitaine",
-        "Occitanie",
-        "Pays de la Loire",
-        "Provence-Alpes-Côte d'Azur",
-        "Guadeloupe",
-        "Martinique",
-        "Guyane",
-        "La Réunion",
-        "Mayotte"
-    ];
-
-    const onSubmitHandler = async (e) => {
-        e.preventDefault();
-        // Handle form submission here
-        console.log(address);
+    const formatPhoneNumber = (value) => {
+        // Allow backspace deletion
+        if (value === '') return '';
+        
+        const numbers = value.replace(/\D/g, '');
+        let formatted = numbers;
+        
+        if (numbers.startsWith('33')) {
+            formatted = `+${numbers.slice(0, 2)} ${numbers.slice(2)}`
+                .replace(/(\+\d{2})(\d{3})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5')
+                .slice(0, 17);
+        } else if (numbers.startsWith('0')) {
+            formatted = numbers
+                .replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5')
+                .slice(0, 14);
+        } else if (numbers.startsWith('+')) {
+            formatted = numbers
+                .replace(/(\+\d{2})(\d{3})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5')
+                .slice(0, 17);
+        }
+        
+        return formatted.trim();
     };
 
     return (
         <>
             <Navbar />
             <div className="pt-20 px-6 md:px-16 lg:px-32 py-16 flex flex-col md:flex-row justify-between">
-                <form onSubmit={onSubmitHandler} className="w-full max-w-2xl">
+                <form onSubmit={formik.handleSubmit} className="w-full max-w-2xl">
                     <h1 className="text-2xl md:text-3xl text-gray-500 mb-8">
-                        Add an <span className="font-semibold text-orange-600">address</span>
+                        Add <span className="font-semibold text-orange-600">Address</span>
                     </h1>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         {/* Full Name */}
-                        <div className="md:col-span-2">
-                            <label className="block text-gray-700 mb-2">Full Name *</label>
+                        <div>
+                            <label className={formStyles.label}>Full Name *</label>
                             <input
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
+                                className={formStyles.input}
                                 type="text"
-                                required
-                                placeholder="John Doe"
-                                onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
-                                value={address.fullName}
+                                name="fullName"
+                                placeholder="Jean Dupont"
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                value={formik.values.fullName}
                             />
+                            {formik.touched.fullName && formik.errors.fullName && (
+                                <div className="text-red-500 text-sm mt-1">{formik.errors.fullName}</div>
+                            )}
                         </div>
 
                         {/* Phone Number */}
-                        <div className="md:col-span-2">
-                            <label className="block text-gray-700 mb-2">Phone Number *</label>
+                        <div>
+                            <label className={formStyles.label}>Phone Number *</label>
                             <input
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
+                                className={formStyles.input}
                                 type="tel"
-                                required
-                                pattern="^(\+33|0)[1-9]\d{8}$"
+                                name="phone"
                                 placeholder="+33 6 12 34 56 78"
-                                onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-                                value={address.phone}
+                                value={formik.values.phone}
+                                onChange={(e) => {
+                                    const formatted = formatPhoneNumber(e.target.value);
+                                    formik.setFieldValue('phone', formatted);
+                                }}
+                                onBlur={formik.handleBlur}
                             />
+                            {formik.touched.phone && formik.errors.phone && (
+                                <div className="text-red-500 text-sm mt-1">{formik.errors.phone}</div>
+                            )}
                         </div>
 
-                        {/* Postal Code */}
+                        {/* Postal Code & City */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className={formStyles.label}>Postal Code *</label>
+                                <input
+                                    className={formStyles.input}
+                                    type="text"
+                                    name="postalCode"
+                                    placeholder="75000"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.postalCode}
+                                />
+                                {formik.touched.postalCode && formik.errors.postalCode && (
+                                    <div className="text-red-500 text-sm mt-1">{formik.errors.postalCode}</div>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className={formStyles.label}>City *</label>
+                                <input
+                                    className={formStyles.input}
+                                    type="text"
+                                    name="city"
+                                    placeholder="Paris"
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    value={formik.values.city}
+                                />
+                                {formik.touched.city && formik.errors.city && (
+                                    <div className="text-red-500 text-sm mt-1">{formik.errors.city}</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Address */}
                         <div>
-                            <label className="block text-gray-700 mb-2">Postal Code *</label>
+                            <label className={formStyles.label}>Address *</label>
                             <input
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
+                                className={formStyles.input}
                                 type="text"
-                                required
-                                pattern="[0-9]{5}"
-                                placeholder="75000"
-                                onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
-                                value={address.postalCode}
+                                name="address"
+                                placeholder="15B Rue de la Paix"
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                value={formik.values.address}
                             />
+                            {formik.touched.address && formik.errors.address && (
+                                <div className="text-red-500 text-sm mt-1">{formik.errors.address}</div>
+                            )}
                         </div>
 
-                        {/* City */}
+                        {/* Additional Information */}
                         <div>
-                            <label className="block text-gray-700 mb-2">City *</label>
+                            <label className={formStyles.label}>
+                                Additional Information
+                                <span className="text-gray-400 ml-1">(optional)</span>
+                            </label>
                             <input
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
+                                className={formStyles.input}
                                 type="text"
-                                required
-                                placeholder="Paris"
-                                onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                                value={address.city}
-                            />
-                        </div>
-
-                        {/* Street Number */}
-                        <div>
-                            <label className="block text-gray-700 mb-2">Street Number *</label>
-                            <input
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
-                                type="text"
-                                required
-                                placeholder="15B"
-                                onChange={(e) => setAddress({ ...address, streetNumber: e.target.value })}
-                                value={address.streetNumber}
-                            />
-                        </div>
-
-                        {/* Street Name */}
-                        <div>
-                            <label className="block text-gray-700 mb-2">Street Name *</label>
-                            <input
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
-                                type="text"
-                                required
-                                placeholder="Rue de la Paix"
-                                onChange={(e) => setAddress({ ...address, streetName: e.target.value })}
-                                value={address.streetName}
-                            />
-                        </div>
-
-                        {/* Apartment */}
-                        <div className="md:col-span-2">
-                            <label className="block text-gray-700 mb-2">Apartment/Building</label>
-                            <input
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
-                                type="text"
+                                name="additionalInfo"
                                 placeholder="Apartment 12, Building C"
-                                onChange={(e) => setAddress({ ...address, apartment: e.target.value })}
-                                value={address.apartment}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                value={formik.values.additionalInfo}
                             />
-                        </div>
-
-                        {/* Region */}
-                        <div className="md:col-span-2">
-                            <label className="block text-gray-700 mb-2">Region *</label>
-                            <select
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-orange-500 outline-none"
-                                required
-                                value={address.region}
-                                onChange={(e) => setAddress({ ...address, region: e.target.value })}
-                            >
-                                <option value="">Select your region</option>
-                                {frenchRegions.map(region => (
-                                    <option key={region} value={region}>{region}</option>
-                                ))}
-                            </select>
                         </div>
                     </div>
 
                     <button 
                         type="submit" 
-                        className="mt-8 w-full bg-orange-600 text-white py-3 hover:bg-orange-700 uppercase transition-colors"
+                        className={formStyles.button}
+                        disabled={formik.isSubmitting}
                     >
-                        Save Address
+                        {formik.isSubmitting ? 'Saving...' : 'Save Address'}
                     </button>
                 </form>
 
@@ -178,6 +205,7 @@ const AddAddress = () => {
                         width={500}
                         height={500}
                         className="rounded-lg shadow-lg"
+                        priority
                     />
                 </div>
             </div>

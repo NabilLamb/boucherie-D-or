@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import CategorySidebar from "./CategorySidebar";
 import { useAppContext } from "@/context/AppContext";
+import { searchIcon } from "@/assets/assets";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -10,6 +11,15 @@ const HomeProducts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (searchQuery && selectedCategory) {
@@ -28,7 +38,6 @@ const HomeProducts = () => {
     }
   }, [searchQuery, selectedCategory, products]);
 
-  // Simplified filter function
   const filteredProducts = products.filter((product) => {
     const matchesSearch = [
       product.name,
@@ -44,7 +53,6 @@ const HomeProducts = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -57,7 +65,6 @@ const HomeProducts = () => {
 
   return (
     <div id="products" className="min-h-screen bg-gray-50 pt-8 pb-12">
-      {/* Title Section */}
       <div className="text-center px-4 mb-8">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
           Our Products
@@ -72,24 +79,32 @@ const HomeProducts = () => {
           setCurrentPage={setCurrentPage}
         />
 
-        {/* Main Content */}
         <div className="flex-1">
-          {/* Search Bar */}
+          {/* Search Bar with Icon */}
           <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                {searchIcon()}
+              </div>
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
           </div>
 
           {/* Products Grid */}
-          {paginatedProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center p-8 text-gray-500 bg-white rounded-lg border border-gray-100">
+              Loading products...
+            </div>
+          ) : paginatedProducts.length === 0 ? (
             <div className="text-center p-8 text-gray-500 bg-white rounded-lg border border-gray-100">
               {searchQuery
                 ? "No products found matching your search"
@@ -100,7 +115,7 @@ const HomeProducts = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
                 {paginatedProducts.map((product) => (
                   <div key={product._id} className="w-full max-w-[180px]">
-                    <ProductCard key={product._id} product={product} />
+                    <ProductCard product={product} />
                   </div>
                 ))}
               </div>

@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
+import { getImageSource } from "@/utils/images";
 
 const Product = () => {
   const { id } = useParams();
@@ -17,7 +18,6 @@ const Product = () => {
   const [zoomStyle, setZoomStyle] = useState({});
   const imageRef = useRef(null);
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
-
 
   const [currentPage, setCurrentPage] = useState(0);
   const PRODUCTS_PER_PAGE = 5;
@@ -47,25 +47,6 @@ const Product = () => {
 
   const handlePrev = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
-  };
-
-  // Image handling utility function
-  const getImageSource = (image) => {
-    try {
-      if (!image) return assets.default_img;
-
-      if (typeof image === "object" && image.url) {
-        return image.url.startsWith("http") ? image.url : assets.default_img;
-      }
-
-      if (typeof image === "string") {
-        return assets[image] || assets.default_img;
-      }
-
-      return assets.default_img;
-    } catch (error) {
-      return assets.default_img;
-    }
   };
 
   // Zoom effect handlers
@@ -124,6 +105,9 @@ const Product = () => {
                 onError={(e) => {
                   e.target.src = assets.default_img;
                 }}
+                onLoadingComplete={() => {
+                  console.log("image loaded");
+                }}
               />
             </div>
 
@@ -160,8 +144,6 @@ const Product = () => {
               <h1 className="text-3xl font-semibold text-gray-900 mb-3">
                 {productData.name}
               </h1>
-
-             
             </div>
 
             {/* Pricing Section */}
@@ -178,7 +160,8 @@ const Product = () => {
                 {productData.offerPrice && (
                   <>
                     <p className="text-xl text-gray-400 line-through">
-                      {currency}{productData.price.toFixed(2)}
+                      {currency}
+                      {productData.price.toFixed(2)}
                     </p>
                     <span className="bg-green-100 text-green-700 text-sm font-medium px-2 py-1 rounded">
                       {Math.round(
