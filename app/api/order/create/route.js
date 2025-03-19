@@ -7,12 +7,8 @@ import User from "@/models/user";
 import connectDB from "@/config/db";
 
 
-// In your POST route handler
 export async function POST(request) {
     try {
-        // 1. Connect to database first
-        await connectDB();
-
         const { userId } = getAuth(request);
         const { address, items } = await request.json();
 
@@ -20,19 +16,15 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: 'Invalid data' });
         }
 
-        // 2. Fixed amount calculation
-        const amount = await items.reduce(async (accPromise, item) => {
-            const acc = await accPromise;
+        //Calculate amount using items
+        const amount = await items.reduce(async (acc, item) => {
             const product = await Product.findById(item.product);
-            
-            // 3. Handle missing product
-            if (!product) {
-                throw new Error(`Product ${item.product} not found`);
+            if (product.offerPrice) {
+                return await acc + product.offerPrice * item.quantity;
+            } else {
+                return await acc + product.price * item.quantity;
             }
-
-            const price = product.offerPrice || product.price;
-            return acc + (price * item.quantity);
-        }, Promise.resolve(0)); // Start with resolved promise
+        }, 0);
 
         await inngest.send({
             name: 'order/created',
@@ -45,7 +37,7 @@ export async function POST(request) {
             }
         });
 
-        // Clear user cart
+        // clear user cart
         const user = await User.findById(userId);
         user.cartItems = {};
         await user.save();
@@ -53,15 +45,8 @@ export async function POST(request) {
         return NextResponse.json({ success: true, message: 'Order Placed' });
 
     } catch (error) {
-        console.error('Order creation error:', {
-            message: error.message,
-            stack: error.stack,
-            userId,
-            items
-        });
-        return NextResponse.json({ 
-            success: false, 
-            message: error.message || 'Internal server error' 
-        });
+        console.log(error);
+        return NextResponse.json({ success: false, message: error.message });
+
     }
 }
