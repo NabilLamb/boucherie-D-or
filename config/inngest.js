@@ -80,29 +80,46 @@ export const createUserOrder = inngest.createFunction(
         await connectDB();
         
         const orders = await Promise.all(events.map(async (event) => {
-            // Get current prices for products
-            const itemsWithPrices = await Promise.all(
-                event.data.items.map(async (item) => {
-                    const product = await Product.findById(item.product);
-                    return {
-                        product: item.product,
-                        quantity: item.quantity,
-                        price: product.offerPrice || product.price
-                    };
-                })
-            );
+            try {
+                const itemsWithPrices = await Promise.all(
+                    event.data.items.map(async (item) => {
+                        const product = await Product.findById(item.product);
+                        if (!product) {
+                            throw new Error(`Product ${item.product} not found`);
+                        }
+                        return {
+                            product: item.product,
+                            quantity: item.quantity,
+                            price: product.offerPrice || product.price
+                        };
+                    })
+                );
 
-            return new Order({
-                userId: event.data.userId,
-                address: event.data.address,
-                items: itemsWithPrices,
-                amount: event.data.amount,
-                status: 'pending',
-                date: new Date(event.data.date)
-            });
+                return new Order({
+                    userId: event.data.userId,
+                    address: event.data.address,
+                    items: itemsWithPrices,
+                    amount: event.data.amount,
+                    status: 'pending',
+                    date: new Date(event.data.date)
+                });
+            } catch (error) {
+                console.error(`Error processing event ${event.id}:`, error);
+                return null; // Skip failed orders
+            }
         }));
 
-        await Order.insertMany(orders);
-        return { success: true, processed: orders.length };
+        // Filter out null values from failed order processing
+        const validOrders = orders.filter(order => order !== null);
+        
+        if (validOrders.length > 0) {
+            await Order.insertMany(validOrders);
+        }
+        
+        return { 
+            success: true, 
+            processed: validOrders.length,
+            failed: orders.length - validOrders.length
+        };
     }
 );
