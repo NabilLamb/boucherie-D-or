@@ -1,5 +1,4 @@
 import logo from "./logo.png";
-import search_icon from "./search_icon.svg";
 import user_icon from "./user_icon.svg";
 import cart_icon from "./cart_icon.svg";
 import add_icon from "./add_icon.svg";
@@ -7,7 +6,6 @@ import order_icon from "./order_icon.svg";
 import instagram_icon from "./instagram_icon.svg";
 import facebook_icon from "./facebook_icon.svg";
 import twitter_icon from "./twitter_icon.svg";
-import box_icon from "./box_icon.svg";
 import product_list_icon from "./product_list_icon.svg";
 import menu_icon from "./menu_icon.svg";
 import arrow_icon from "./arrow_icon.svg";
@@ -79,7 +77,6 @@ import electric_oven from "./products_img/electric_oven.png"
 
 export const assets = {
   logo,
-  search_icon,
   user_icon,
   cart_icon,
   add_icon,
@@ -87,7 +84,6 @@ export const assets = {
   instagram_icon,
   facebook_icon,
   twitter_icon,
-  box_icon,
   product_list_icon,
   menu_icon,
   arrow_icon,
@@ -158,7 +154,6 @@ export const assets = {
 
 };
 
-// Updated icons with className prop and better size control
 export const CartIcon = ({ className = "w-6 h-6" }) => {
   return (
     <svg
@@ -205,9 +200,53 @@ export const HeartIcon = ({ className = "w-6 h-6", filled = false }) => (
 );
 
 
-export const BoxIcon = () => (
-  <svg className="w-5 h-5 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10 21v-9m3-4H7.5a2.5 2.5 0 1 1 0-5c1.5 0 2.875 1.25 3.875 2.5M14 21v-9m-9 0h14v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8ZM4 8h16a1 1 0 0 1 1 1v3H3V9a1 1 0 0 1 1-1Zm12.155-5c-3 0-5.5 5-5.5 5h5.5a2.5 2.5 0 0 0 0-5Z" />
+export const BoxIcon = ({ className, width = 24, height = 24 }) => (
+  <svg 
+    className={className}
+    width={width}
+    height={height}
+    viewBox="0 0 100 100"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path 
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      fill="#FBF063" 
+      d="M7 22L50 0l43 22-43 21.001L7 22z"
+    />
+    <path 
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      fill="#F29C1F" 
+      d="M50.003 42.997L7 22v54.28l43.006 21.714-.003-54.997z"
+    />
+    <path 
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      fill="#F0C419" 
+      d="M50 97.994L93.006 76.28V22L50.003 42.997 50 97.994z"
+    />
+    <path 
+      opacity="0.5" 
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      fill="#F29C1F" 
+      d="M27.036 11.705l42.995 21.498 2.263-1.105-43.047-21.524z"
+    />
+    <path 
+      opacity="0.5" 
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      fill="#ffffff" 
+      d="M21.318 14.674L63.3 36.505l15.99-7.809L35.788 7.271z"
+    />
+    <path 
+      opacity="0.5" 
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      fill="#ffffff" 
+      d="M63.312 36.505l15.978-7.818v11l-15.978 8.817V36.505z"
+    />
   </svg>
 );
 
