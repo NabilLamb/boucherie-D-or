@@ -7,8 +7,12 @@ import User from "@/models/user";
 import connectDB from "@/config/db";
 
 
+// In your POST route handler
 export async function POST(request) {
     try {
+        // 1. Connect to database first
+        await connectDB();
+
         const { userId } = getAuth(request);
         const { address, items } = await request.json();
 
@@ -16,19 +20,23 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: 'Invalid data' });
         }
 
-        //Calculate amount using items
-        const amount = await items.reduce(async (acc, item) => {
+        // 2. Fixed amount calculation
+        const amount = await items.reduce(async (accPromise, item) => {
+            const acc = await accPromise;
             const product = await Product.findById(item.product);
-            if (product.offerPrice) {
-                return await acc + product.offerPrice * item.quantity;
-            } else {
-                return await acc + product.price * item.quantity;
+            
+            // 3. Handle missing product
+            if (!product) {
+                throw new Error(`Product ${item.product} not found`);
             }
-        }, 0);
+
+            const price = product.offerPrice || product.price;
+            return acc + (price * item.quantity);
+        }, Promise.resolve(0)); // Start with resolved promise
 
         await inngest.send({
             name: 'order/created',
-            data: {
+            data: { 
                 userId,
                 address,
                 items,
@@ -37,7 +45,7 @@ export async function POST(request) {
             }
         });
 
-        // clear user cart
+        // Clear user cart
         const user = await User.findById(userId);
         user.cartItems = {};
         await user.save();
@@ -45,8 +53,10 @@ export async function POST(request) {
         return NextResponse.json({ success: true, message: 'Order Placed' });
 
     } catch (error) {
-        console.log(error);
-        return NextResponse.json({ success: false, message: error.message });
-
+        console.error('Order creation error:', error);
+        return NextResponse.json({ 
+            success: false, 
+            message: error.message || 'Internal server error' 
+        });
     }
 }
