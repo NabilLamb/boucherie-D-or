@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: 'Order Placed'
     },
-    date: { type: Number, required: ture }
+    date: { type: Number, required: true }
 });
 
 const Order = mongoose.models.Order || mongoose.model('order', orderSchema);
