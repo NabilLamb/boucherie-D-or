@@ -53,7 +53,12 @@ export async function POST(request) {
         return NextResponse.json({ success: true, message: 'Order Placed' });
 
     } catch (error) {
-        console.error('Order creation error:', error);
+        console.error('Order creation error:', {
+            message: error.message,
+            stack: error.stack,
+            userId,
+            items
+        });
         return NextResponse.json({ 
             success: false, 
             message: error.message || 'Internal server error' 
