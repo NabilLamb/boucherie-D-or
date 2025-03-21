@@ -77,7 +77,7 @@ const OrderSummary = () => {
       const { data } = await axios.post(
         "/api/order/create",
         {
-          address: selectedAddress._id,
+          address: selectedAddress.id,
           items: cartItemsArray,
         },
         {
@@ -93,7 +93,7 @@ const OrderSummary = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message);
     }
   };
 
