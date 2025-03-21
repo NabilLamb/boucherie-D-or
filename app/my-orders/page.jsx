@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { Package } from "react-feather";
 import Link from "next/link";
+import { getImageSource } from "@/utils/images";
+import Image from "next/image";
 
 const MyOrders = () => {
   const { currency, getToken, user } = useAppContext();
@@ -70,7 +72,8 @@ const MyOrders = () => {
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Order History</h1>
             <p className="mt-2 text-sm text-gray-500">
-              Review your orders with detailed product information. All orders include free shipping.
+              Review your orders with detailed product information. All orders
+              include free shipping.
             </p>
           </div>
 
@@ -79,7 +82,9 @@ const MyOrders = () => {
           ) : orders.length === 0 ? (
             <div className="text-center bg-white p-12 rounded-lg shadow-sm">
               <Package className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">No orders found</h3>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">
+                No orders found
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Get started by placing a new order.
               </p>
@@ -127,16 +132,23 @@ const MyOrders = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
                     {/* Order Items */}
                     <div className="md:border-r md:border-gray-200 pr-6">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3">ITEMS</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-3">
+                        ITEMS
+                      </h4>
                       <div className="space-y-4">
                         {order.items.map((item) => (
-                          <div key={item._id} className="flex items-center space-x-4">
+                          <div
+                            key={item._id}
+                            className="flex items-center space-x-4"
+                          >
                             {/* Product Image */}
                             {item.product?.image?.length > 0 ? (
-                              <img
-                                src={item.product.image[0]}
-                                alt={item.product.name}
-                                className="h-12 w-12 rounded object-cover"
+                              <Image
+                                src={getImageSource(product.image[0])}
+                                alt={product.name}
+                                width={80}
+                                height={80}
+                                className="w-full h-full object-contain mix-blend-multiply"
                               />
                             ) : (
                               <div className="h-12 w-12 flex items-center justify-center bg-gray-100 rounded">
@@ -148,22 +160,36 @@ const MyOrders = () => {
                               <p className="text-sm font-medium text-gray-900">
                                 {item.product.name}
                               </p>
-                              <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                              {item.product.offerPrice && Number(item.product.offerPrice) < Number(item.product.price) ? (
+                              <p className="text-sm text-gray-500">
+                                Quantity: {item.quantity}
+                              </p>
+                              {item.product.offerPrice &&
+                              Number(item.product.offerPrice) <
+                                Number(item.product.price) ? (
                                 <div className="flex items-center space-x-2">
                                   <p className="text-sm text-gray-500 line-through">
-                                    {currency}{item.product.price.toFixed(2)}
+                                    {currency}
+                                    {item.product.price.toFixed(2)}
                                   </p>
                                   <p className="text-sm font-medium text-gray-900">
-                                    {currency}{item.product.offerPrice.toFixed(2)}
+                                    {currency}
+                                    {item.product.offerPrice.toFixed(2)}
                                   </p>
                                   <p className="text-xs text-green-600">
-                                    Save {(((item.product.price - item.product.offerPrice) / item.product.price) * 100).toFixed(0)}%
+                                    Save{" "}
+                                    {(
+                                      ((item.product.price -
+                                        item.product.offerPrice) /
+                                        item.product.price) *
+                                      100
+                                    ).toFixed(0)}
+                                    %
                                   </p>
                                 </div>
                               ) : (
                                 <p className="text-sm font-medium text-gray-900">
-                                  {currency}{item.product.price.toFixed(2)}
+                                  {currency}
+                                  {item.product.price.toFixed(2)}
                                 </p>
                               )}
                             </div>
@@ -174,15 +200,22 @@ const MyOrders = () => {
 
                     {/* Shipping Address */}
                     <div className="md:border-r md:border-gray-200 pr-6">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3">SHIPPING ADDRESS</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-3">
+                        SHIPPING ADDRESS
+                      </h4>
                       <div className="space-y-2 text-sm">
-                        <p className="text-gray-900 font-medium">{order.address?.fullName}</p>
-                        <p className="text-gray-500">{order.address?.area}</p>
+                        <p className="text-gray-900 font-medium">
+                          {order.address?.fullName}
+                        </p>
                         <p className="text-gray-500">
                           {order.address?.city}, {order.address?.postalCode}
                         </p>
-                        <p className="text-gray-500">{order.address?.address}</p>
-                        <p className="text-gray-500">Phone: {order.address?.phone}</p>
+                        <p className="text-gray-500">
+                          {order.address?.address}
+                        </p>
+                        <p className="text-gray-500">
+                          Phone: {order.address?.phone}
+                        </p>
                         {order.address?.additionalInfo && (
                           <p className="text-gray-500">
                             Note: {order.address?.additionalInfo}
@@ -193,19 +226,29 @@ const MyOrders = () => {
 
                     {/* Payment & General Order Info */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 mb-3">PAYMENT</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-3">
+                        PAYMENT
+                      </h4>
                       <dl className="space-y-3">
                         <div>
                           <dt className="text-sm text-gray-500">Method</dt>
-                          <dd className="text-sm font-medium text-gray-900">COD</dd>
+                          <dd className="text-sm font-medium text-gray-900">
+                            COD
+                          </dd>
                         </div>
                         <div>
-                          <dt className="text-sm text-gray-500">Payment Status</dt>
-                          <dd className="text-sm font-medium text-gray-900">Pending</dd>
+                          <dt className="text-sm text-gray-500">
+                            Payment Status
+                          </dt>
+                          <dd className="text-sm font-medium text-gray-900">
+                            Pending
+                          </dd>
                         </div>
                         <div>
                           <dt className="text-sm text-gray-500">Shipping</dt>
-                          <dd className="text-sm font-medium text-gray-900">FREE</dd>
+                          <dd className="text-sm font-medium text-gray-900">
+                            FREE
+                          </dd>
                         </div>
                       </dl>
                     </div>

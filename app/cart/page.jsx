@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { assets } from "@/assets/assets";
 import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
@@ -21,7 +20,7 @@ const Cart = () => {
 
     if (["kg", "liter"].includes(product.unit)) {
       minQuantity = 0.1;
-      roundedQuantity = Math.round(newQuantity * 10) / 10; // Round to 1 decimal
+      roundedQuantity = Math.round(newQuantity * 10) / 10;
     }
 
     updateCartQuantity(productId, Math.max(minQuantity, roundedQuantity));
