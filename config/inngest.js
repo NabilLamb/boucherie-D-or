@@ -80,8 +80,6 @@ export const createUserOrder = inngest.createFunction(
     async ({ events }) => {
         await connectDB();
         // Force fresh model
-        delete mongoose.connection.models.Order;
-        const Order = mongoose.model('Order', orderSchema);
 
         const orders = events.map((event) => ({
             userId: event.data.userId,
