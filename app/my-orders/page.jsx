@@ -136,65 +136,94 @@ const MyOrders = () => {
                         ITEMS
                       </h4>
                       <div className="space-y-4">
-                        {order.items.map((item) => (
-                          <div
-                            key={item._id}
-                            className="flex items-center space-x-4"
-                          >
-                            {/* Product Image */}
-                            {item.product?.image?.length > 0 ? (
-                              <Image
-                                src={getImageSource(product.image[0])}
-                                alt={product.name}
-                                width={80}
-                                height={80}
-                                className="w-full h-full object-contain mix-blend-multiply"
-                              />
-                            ) : (
-                              <div className="h-12 w-12 flex items-center justify-center bg-gray-100 rounded">
-                                <Package className="h-6 w-6 text-gray-400" />
-                              </div>
-                            )}
-
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">
-                                {item.product.name}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                Quantity: {item.quantity}
-                              </p>
-                              {item.product.offerPrice &&
-                              Number(item.product.offerPrice) <
-                                Number(item.product.price) ? (
-                                <div className="flex items-center space-x-2">
-                                  <p className="text-sm text-gray-500 line-through">
-                                    {currency}
-                                    {item.product.price.toFixed(2)}
-                                  </p>
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {currency}
-                                    {item.product.offerPrice.toFixed(2)}
-                                  </p>
-                                  <p className="text-xs text-green-600">
-                                    Save{" "}
-                                    {(
-                                      ((item.product.price -
-                                        item.product.offerPrice) /
-                                        item.product.price) *
-                                      100
-                                    ).toFixed(0)}
-                                    %
-                                  </p>
-                                </div>
+                        {order.items.map((item) => {
+                          console.log("Item:", item);
+                          return (
+                            <div
+                              key={item._id}
+                              className="flex items-center space-x-4"
+                            >
+                              {/* Product Image */}
+                              {item.productSnapshot.image?.length > 0 ? (
+                                <Image
+                                  src={getImageSource(
+                                    item.productSnapshot.image[0]
+                                  )}
+                                  alt={item.productSnapshot.name}
+                                  width={80}
+                                  height={80}
+                                  className="w-full h-full object-contain mix-blend-multiply"
+                                />
                               ) : (
-                                <p className="text-sm font-medium text-gray-900">
-                                  {currency}
-                                  {item.product.price.toFixed(2)}
-                                </p>
+                                <div className="h-12 w-12 flex items-center justify-center bg-gray-100 rounded">
+                                  <Package className="h-6 w-6 text-gray-400" />
+                                </div>
                               )}
+                              
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {item.productSnapshot?.name ||
+                                    item.product?.name ||
+                                    "Unknown Product"}
+                                </p>
+
+                                {item.productSnapshot ? (
+                                  // Render from snapshot
+                                  <>
+                                    <p className="text-sm text-gray-500">
+                                      Quantity: {item.quantity}
+                                    </p>
+                                    {item.productSnapshot.offerPrice ? (
+                                      <div className="flex items-center space-x-2">
+                                        <p className="text-sm text-gray-500 line-through">
+                                          {currency}
+                                          {item.productSnapshot.price?.toFixed(
+                                            2
+                                          )}
+                                        </p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                          {currency}
+                                          {item.productSnapshot.offerPrice?.toFixed(
+                                            2
+                                          )}
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm font-medium text-gray-900">
+                                        {currency}
+                                        {item.productSnapshot.price?.toFixed(2)}
+                                      </p>
+                                    )}
+                                  </>
+                                ) : (
+                                  // Fallback to live product data
+                                  <>
+                                    <p className="text-sm text-gray-500">
+                                      Quantity: {item.quantity}
+                                    </p>
+                                    {item.product?.offerPrice ? (
+                                      <div className="flex items-center space-x-2">
+                                        <p className="text-sm text-gray-500 line-through">
+                                          {currency}
+                                          {item.product?.price?.toFixed(2)}
+                                        </p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                          {currency}
+                                          {item.product?.offerPrice?.toFixed(2)}
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm font-medium text-gray-900">
+                                        {currency}
+                                        {item.product?.price?.toFixed(2)}
+                                      </p>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
 

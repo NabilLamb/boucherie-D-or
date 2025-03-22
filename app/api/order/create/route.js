@@ -3,7 +3,6 @@ import Product from "@/models/Product";
 import { NextResponse } from "next/server";
 import { inngest } from "@/config/inngest";
 import User from "@/models/user";
-import mongoose from "mongoose";
 
 export async function POST(request) {
   try {
@@ -22,25 +21,43 @@ export async function POST(request) {
     }
 
     let amount = 0;
-    for (const item of items) {
-      if (!mongoose.Types.ObjectId.isValid(item.product)) {
-        return NextResponse.json({ success: false, message: `Invalid product ID: ${item.product}` }, { status: 400 });
-      }
+    const itemsWithSnapshots = [];
 
+    for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
-        return NextResponse.json({ success: false, message: `Product with ID ${item.product} not found` }, { status: 404 });
+        return NextResponse.json({
+          success: false,
+          message: `Product with ID ${item.product} not found`
+        }, { status: 404 });
       }
 
-      amount += product.offerPrice ? product.offerPrice * item.quantity : product.price * item.quantity;
+      
+      itemsWithSnapshots.push({
+        product: item.product,
+        productSnapshot: {
+          name: product.name,
+          price: product.price,
+          offerPrice: product.offerPrice || null,
+          image: product.image,
+          unit: product.unit || "kg",
+          category: product.category
+        },
+        quantity: item.quantity
+      });
+
+      amount += product.offerPrice ?
+        product.offerPrice * item.quantity :
+        product.price * item.quantity;
     }
 
+    
     await inngest.send({
       name: "order/created",
       data: {
         userId,
         address,
-        items,
+        items: itemsWithSnapshots,
         amount,
         date: Date.now(),
       },
