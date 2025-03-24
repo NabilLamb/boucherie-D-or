@@ -25,7 +25,7 @@ export async function GET(request) {
         const orders = await Order.find({ userId })
             .populate({
                 path: 'items.product',
-                select: 'name price offerPrice images'
+                select: 'name price offerPrice image'
             })
             .populate({
                 path: 'address',

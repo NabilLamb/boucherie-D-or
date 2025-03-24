@@ -1,0 +1,77 @@
+/* styles/print.css */
+@media print {
+    body * {
+      visibility: hidden;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    .invoice-modal-overlay,
+    .invoice-modal-overlay * {
+      visibility: visible;
+    }
+  
+    .invoice-modal-content {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      padding: 20px !important;
+    }
+  
+    /* Hide interactive elements */
+    button, .no-print {
+      display: none !important;
+    }
+  
+    /* Improve table layout */
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+  
+    td, th {
+      padding: 8px !important;
+      word-wrap: break-word;
+    }
+  
+    /* Force full width for grid elements */
+    .grid > * {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  
+    /* Fix image scaling */
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  }
+  
+  .invoice-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+  
+  .invoice-modal-content {
+    background: white;
+    max-width: 1000px;
+    width: 100%;
+    border-radius: 0.5rem;
+    overflow: auto;
+    max-height: 90vh;
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }

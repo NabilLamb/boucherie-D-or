@@ -258,7 +258,8 @@ const ContactSection = () => {
                           Email Us
                         </h3>
                         <p className="mt-2 text-gray-600">
-                          contact@boucheriedor.fr
+                          {/* contact@boucheriedor.fr */}
+                          boucheriedor@gmail.com
                         </p>
                         <p className="mt-2 text-sm text-gray-500">
                           24h Response Time

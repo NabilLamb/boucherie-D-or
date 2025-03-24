@@ -1,49 +1,68 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { BoxIcon } from "@/assets/assets";
+import React, { useEffect, useState, useRef } from "react";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronDown,
+  Box,
+  Clock,
+  Truck,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  DollarSign,
+  Package,
+  User,
+  MapPin,
+  Phone,
+  Printer,
+  X,
+} from "react-feather"; // Added X icon
 import Pagination from "@/components/seller/Pagination";
+import Image from "next/image";
+import { getImageSource } from "@/utils/images";
+import Invoice from "@/components/Invoice/Invoice";
+
+// Badge Component
+const Badge = ({ children, className = "" }) => (
+  <div
+    className={`inline-flex items-center rounded-full py-1 px-3 text-sm ${className}`}
+  >
+    {children}
+  </div>
+);
 
 const Orders = () => {
   const { currency, getToken, user } = useAppContext();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [limit] = useState(10); // orders per page
+  const [limit] = useState(10);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [invoiceOrderId, setInvoiceOrderId] = useState(null);
 
+  // Fetch orders
   const fetchSellerOrders = async () => {
     try {
       setLoading(true);
       const token = await getToken();
       const { data } = await axios.get("/api/order/seller-orders", {
         headers: { Authorization: `Bearer ${token}` },
-        params: {
-          page: currentPage,
-          limit,
-          startDate,
-          endDate,
-        },
+        params: { page: currentPage, limit, startDate, endDate },
       });
 
       if (data.success) {
         setOrders(data.orders);
         setTotalPages(Math.ceil(data.totalOrders / limit));
-        // Reset to page 1 if current page exceeds total pages
         if (currentPage > Math.ceil(data.totalOrders / limit)) {
           setCurrentPage(1);
         }
-      } else {
-        toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
@@ -58,15 +77,12 @@ const Orders = () => {
     }
   }, [user, currentPage, limit, startDate, endDate]);
 
+  // Toggle order details
   const toggleOrderDetails = (orderId) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
   };
 
-  const totalOrders = orders.length;
-  const totalAmount = orders
-    .reduce((sum, order) => sum + order.amount, 0)
-    .toFixed(2);
-
+  // Format order date
   const formatOrderDate = (timestamp) => {
     const date = new Date(timestamp);
     return `${date.toLocaleDateString("en-GB", {
@@ -80,180 +96,244 @@ const Orders = () => {
     })}`;
   };
 
-  const DateFilter = () => (
-    <div className="flex flex-col md:flex-row gap-4 mb-6">
-      <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-700">From:</label>
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="border rounded-md p-2"
-        />
-      </div>
-      <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-700">To:</label>
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="border rounded-md p-2"
-        />
-      </div>
-      <button
-        onClick={() => {
-          setStartDate("");
-          setEndDate("");
-        }}
-        className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-      >
-        Clear Dates
-      </button>
+  // Status Indicator Component
+  const StatusIndicator = ({ status }) => {
+    const statusConfig = {
+      "Order Placed": {
+        color: "bg-blue-100 text-blue-800",
+        icon: <Package size={16} />,
+      },
+      Processing: {
+        color: "bg-purple-100 text-purple-800",
+        icon: <Clock size={16} />,
+      },
+      Shipped: {
+        color: "bg-amber-100 text-amber-800",
+        icon: <Truck size={16} />,
+      },
+      Completed: {
+        color: "bg-green-100 text-green-800",
+        icon: <CheckCircle size={16} />,
+      },
+      Cancelled: {
+        color: "bg-red-100 text-red-800",
+        icon: <XCircle size={16} />,
+      },
+    };
+
+    return (
+      <Badge className={statusConfig[status]?.color}>
+        {statusConfig[status]?.icon}
+        <span className="ml-2">{status}</span>
+      </Badge>
+    );
+  };
+
+  // Render order items using productSnapshot
+  const renderOrderItems = (items) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {items.map((item, index) => {
+        const snapshot = item?.productSnapshot || {};
+        return (
+          <div
+            key={item?._id || `item-${index}`}
+            className="bg-white p-4 rounded-lg shadow border border-gray-200"
+          >
+            <div className="flex items-start gap-4">
+              <div className="relative w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
+                {snapshot?.image?.[0] ? (
+                  <Image
+                    src={getImageSource(snapshot.image[0])}
+                    alt={snapshot?.name || "Product image"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <Box className="w-full h-full text-gray-400 p-3" />
+                )}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium">
+                  {snapshot?.name || "Unnamed Product"}
+                </h4>
+                <div className="text-sm text-gray-600 mt-1 space-y-1">
+                  <p>
+                    Quantity: {item?.quantity || 0} {snapshot?.unit || "unit"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">
+                      {currency}
+                      {snapshot?.offerPrice || snapshot?.price || "0.00"}
+                    </span>
+                    {snapshot?.offerPrice && (
+                      <span className="line-through text-gray-400">
+                        {currency}
+                        {snapshot?.price || "0.00"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 capitalize">
+                    Category: {snapshot?.category || "Uncategorized"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 
   return (
-    <div className="flex flex-col h-screen overflow-y-auto bg-gray-100">
-      {loading ? (
-        <div className="flex items-center justify-center flex-1">
-          <Loading />
-        </div>
-      ) : (
-        <div className="flex-1 p-6 md:p-10 space-y-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Order Management
-          </h2>
+    <div className="min-h-screen bg-gray-50">
+      <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
+        {/* Header */}
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Order Management Dashboard
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Monitor and manage customer orders
+          </p>
+        </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-md p-5 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Total Orders
-              </h3>
-              <p className="text-3xl font-bold text-blue-600">{totalOrders}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-md p-5 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Total Amount
-              </h3>
-              <p className="text-3xl font-bold text-green-600">
-                {currency}
-                {totalAmount}
-              </p>
-            </div>
+        {/* Orders List */}
+        {loading ? (
+          <div className="flex justify-center p-12">
+            <Loading />
           </div>
-
-          <DateFilter />
-
-          <div className="overflow-x-auto rounded-lg shadow-md bg-white border border-gray-200">
-            <table className="min-w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order ID
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Items
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Details
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, index) => (
-                  <React.Fragment key={index}>
-                    <tr
-                      className="border-b hover:bg-gray-50 cursor-pointer"
-                      onClick={() => toggleOrderDetails(order._id)}
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800">
+        ) : orders.length === 0 ? (
+          <div className="bg-white p-8 rounded-xl text-center">
+            <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900">
+              No orders found
+            </h3>
+            <p className="text-gray-500 mt-2">Try adjusting your filters</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <div
+                key={order._id}
+                className="bg-white rounded-xl shadow-sm border border-gray-200"
+              >
+                <div
+                  className="p-6 cursor-pointer"
+                  onClick={() => toggleOrderDetails(order._id)}
+                >
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-center">
+                    <div>
+                      <p className="text-sm text-gray-500">Order ID</p>
+                      <p className="font-medium">
                         #{order._id.toString().slice(-6).toUpperCase()}
-                      </td>
-                      <td className="px-4 py-4 whitespace-normal text-sm text-gray-800">
-                        <div className="flex items-center flex-wrap">
-                          <BoxIcon className="w-8 h-8 text-yellow-500 mr-2" />
-                          {order.items.map((item) => (
-                            <p key={item._id} className="mr-2 mb-1">
-                              {item.product.name} x {item.quantity}
-                            </p>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-normal text-sm text-gray-800">
-                        <p className="font-semibold">
-                          {order.address.fullName}
-                        </p>
-                        <p>{`${order.address.city}, ${order.address.postalCode}`}</p>
-                        <p>{order.address.phone}</p>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800">
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Customer</p>
+                      <p className="font-medium">{order.address.fullName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Date</p>
+                      <p className="font-medium">
+                        {formatOrderDate(order.date)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Status</p>
+                      <StatusIndicator status={order.status} />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-semibold">
                         {currency}
                         {order.amount}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800">
-                        {formatOrderDate(order.date)}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-800 flex items-center">
-                        <p>Details</p>
-                        {expandedOrder === order._id ? (
-                          <ChevronUpIcon className="w-4 h-4 ml-2" />
-                        ) : (
-                          <ChevronDownIcon className="w-4 h-4 ml-2" />
-                        )}
-                      </td>
-                    </tr>
-                    {expandedOrder === order._id && (
-                      <tr>
-                        <td colSpan="6" className="p-4 bg-gray-50">
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {order.items.map((item) => (
-                              <div
-                                key={item._id}
-                                className="border rounded-lg shadow-md p-4 bg-white"
-                              >
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                                  {item.product.name}
-                                </h3>
-                                <p className="text-sm text-gray-600">
-                                  Quantity: {item.quantity}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Price: {currency}
-                                  {item.product.price}
-                                </p>
-                                {item.product.offerPrice && (
-                                  <p className="text-sm text-green-600">
-                                    Offer: {currency}
-                                    {item.product.offerPrice}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {expandedOrder === order._id && (
+                  <div className="border-t p-6 bg-gray-50">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                          <Package size={20} /> Purchased Items
+                        </h3>
+                        {renderOrderItems(order.items)}
+                      </div>
+
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                            <User size={20} /> Customer Details
+                          </h3>
+                          <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                            <div className="space-y-2 text-sm">
+                              <p className="font-medium">
+                                {order.address.fullName}
+                              </p>
+                              <p className="flex items-center gap-2 text-gray-600">
+                                <MapPin size={16} />
+                                {order.address.address}, {order.address.city}{" "}
+                                {order.address.postalCode}
+                              </p>
+                              <p className="flex items-center gap-2 text-gray-600">
+                                <Phone size={16} />
+                                {order.address.phone}
+                              </p>
+                            </div>
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                            <Truck size={20} /> Shipping Actions
+                          </h3>
+                          <button
+                            onClick={() => setInvoiceOrderId(order._id)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                          >
+                            <Printer size={18} />
+                            Print Invoice
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
+        )}
+
+        {/* Invoice Modal */}
+        {invoiceOrderId && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto relative">
+              {/* Close Button with visible background */}
+              <button
+                onClick={() => setInvoiceOrderId(null)}
+                className="absolute right-4 top-4 p-2 bg-red-500 rounded-full shadow-lg hover:bg-red-600 transition-colors"
+                aria-label="Close invoice"
+              >
+                <X size={20} className="text-white" />
+              </button>
+
+              <Invoice
+                order={orders.find((o) => o._id === invoiceOrderId)}
+                key={invoiceOrderId}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="mt-8">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={(page) => setCurrentPage(page)}
+            onPageChange={setCurrentPage}
           />
         </div>
-      )}
+      </div>
       <Footer />
     </div>
   );

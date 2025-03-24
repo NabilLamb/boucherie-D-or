@@ -17,4 +17,10 @@ export default {
     },
   },
   plugins: [],
+  variants: {
+    extend: {
+      visibility: ['print'],
+      display: ['print']
+    }
+  }
 };
