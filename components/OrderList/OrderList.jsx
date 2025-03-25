@@ -309,6 +309,7 @@ const StatusIndicator = ({ status }) => {
                         <div className="flex gap-3">
                           {isSeller && (
                             <div className="relative w-full">
+                              
                               <select
                                 value={order.status}
                                 onChange={(e) =>
@@ -333,7 +334,7 @@ const StatusIndicator = ({ status }) => {
                           )}
                           <button
                             onClick={() => setInvoiceOrderId(order._id)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                            className="block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                           >
                             <Printer size={18} />
                             Print Invoice

@@ -88,7 +88,6 @@ const Orders = () => {
         ));
         toast.success("Status updated successfully");
         
-        // Update filtered orders as well
         setFilteredOrders(prev => prev.map(order => 
           order._id === orderId ? { ...order, status: newStatus } : order
         ));
