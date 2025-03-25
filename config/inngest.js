@@ -90,6 +90,7 @@ export const createUserOrder = inngest.createFunction(
             })),
             amount: event.data.amount,
             address: event.data.address,
+            status: 'Order Placed',
             date: event.data.date
         }));
         await Order.insertMany(orders);

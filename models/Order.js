@@ -19,8 +19,9 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        default: 'Order Placed'
-    },
+        default: 'Order Placed',
+        enum: ['Order Placed', 'Processing', 'Shipped', 'Completed', 'Cancelled']
+      },
     date: { type: Number, required: true }
 });
 
