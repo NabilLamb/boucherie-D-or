@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAppContext } from "@/context/AppContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Loading from "@/components/Loading";
@@ -8,8 +7,8 @@ import {
   ChartPieIcon,
   HeartIcon,
   UsersIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
+import axios from "axios";
 
 const page = () => {
   const [stats, setStats] = useState([]);
@@ -84,7 +83,6 @@ const page = () => {
                       <th className="px-6 py-4 text-left">Product</th>
                       <th className="px-6 py-4 text-center">Likes</th>
                       <th className="px-6 py-4 text-center">Unique Users</th>
-                      {/* <th className="px-6 py-4 text-right">Actions</th> */}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -106,14 +104,6 @@ const page = () => {
                         <td className="px-6 py-4 text-center">
                           {item.users.length}
                         </td>
-                        {/* <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => handleDelete(item._id)}
-                            className="text-red-500 hover:text-red-700 p-2"
-                          >
-                            <TrashIcon className="w-5 h-5" />
-                          </button>
-                        </td> */}
                       </tr>
                     ))}
                   </tbody>

@@ -1,7 +1,10 @@
+"use client";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
 import React, { useState } from "react";
+import axios from "axios";
+
 
 const page = () => {
   const { user } = useAppContext();
