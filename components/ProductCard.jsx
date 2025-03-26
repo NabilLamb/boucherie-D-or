@@ -77,6 +77,7 @@ const ProductCard = ({ product }) => {
         <button
           onClick={handleWishlist}
           className="absolute top-2 right-2 p-1.5 rounded-full bg-white shadow-sm hover:shadow-md"
+          aria-label={isLiked ? "Remove from favorites" : "Add to favorites"}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
