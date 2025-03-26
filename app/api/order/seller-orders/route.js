@@ -1,3 +1,4 @@
+"use server";
 import connectDB from "@/config/db";
 import authSeller from "@/lib/authSeller";
 import Address from "@/models/Address";
@@ -13,8 +14,6 @@ export async function GET(request) {
         const { userId } = getAuth(request);
         const isSeller = await authSeller(userId);
 
-
-        await connectDB();
 
         if (!isSeller) {
             return NextResponse.json({ success: false, message: "not authorized" });

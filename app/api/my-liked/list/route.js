@@ -19,7 +19,7 @@ export async function GET(request) {
         const wishlist = await Wishlist.find({ user: userId })
             .populate({
                 path: 'product',
-                select: 'name price offerPrice image category unit'
+                select: 'name description price offerPrice image category unit'
             })
             .sort({ createdAt: -1 });
 

@@ -3,33 +3,19 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import Loading from "@/components/Loading";
 import { HeartIcon } from "@/assets/assets";
 import ProductCard from "@/components/ProductCard";
-import { toast } from "react-hot-toast";
 
 const page = () => {
-  const { user, wishlist, updateWishlist } = useAppContext();
-  const [loading, setLoading] = useState(true);
+  const { user, wishlist, isWishlistLoading } = useAppContext();
+  const [localLoading, setLocalLoading] = useState(true);
 
   useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const { data } = await axios.get("/api/my-liked/list");
-        const uniqueProducts = data.wishlist.reduce((acc, current) => {
-          if (!acc.find((item) => item.product._id === current.product._id)) {
-            acc.push(current);
-          }
-          return acc;
-        }, []);
-        updateWishlist(uniqueProducts);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchWishlist();
-  }, [user]);
+    if (!isWishlistLoading) {
+      setLocalLoading(false);
+    }
+  }, [isWishlistLoading]);
 
   return (
     <>
@@ -44,7 +30,7 @@ const page = () => {
               All products you've saved for later
             </p>
           </div>
-          {loading ? (
+          {localLoading ? (
             <Loading />
           ) : wishlist.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-xl shadow-sm">
@@ -59,7 +45,7 @@ const page = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {wishlist.map((item) => (
-                <ProductCard key={item.product._id} product={item.product} />
+                <ProductCard key={item._id} product={item.product} />
               ))}
             </div>
           )}
@@ -69,5 +55,4 @@ const page = () => {
     </>
   );
 };
-
 export default page;

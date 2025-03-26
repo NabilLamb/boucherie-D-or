@@ -23,6 +23,7 @@ export const AppContextProvider = (props) => {
   const [isSeller, setIsSeller] = useState(false);
   const [cartItems, setCartItems] = useState({});
   const [wishlist, setWishlist] = useState([]);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(true);
 
   const updateWishlist = (newWishlist) => {
     setWishlist(newWishlist);
@@ -138,6 +139,37 @@ export const AppContextProvider = (props) => {
     }
   }, [isLoaded, user]);
 
+  useEffect(() => {
+    const initializeWishlist = async () => {
+      if (user) {
+        await fetchWishlist();
+      }
+    };
+    initializeWishlist();
+  }, []);
+
+  const fetchWishlist = async () => {
+    try {
+      if (user) {
+        const { data } = await axios.get("/api/my-liked/list");
+        setWishlist(data.wishlist);
+      }
+    } catch (error) {
+      console.error("Failed to fetch wishlist:", error);
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchWishlist();
+    } else {
+      setWishlist([]);
+      setIsWishlistLoading(false);
+    }
+  }, [user]);
+
   const value = {
     user,
     getToken,
@@ -156,7 +188,9 @@ export const AppContextProvider = (props) => {
     getCartCount,
     getCartAmount,
     wishlist,
-    updateWishlist
+    isWishlistLoading,
+    updateWishlist: setWishlist,
+    fetchWishlist,
   };
 
   return (
