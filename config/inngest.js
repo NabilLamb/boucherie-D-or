@@ -3,7 +3,7 @@ import connectDB from "./db";
 import User from "@/models/user";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
-
+import Wishlist from "@/models/Wishlist";
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "goldenbutcher-next" });
 
@@ -97,9 +97,7 @@ export const createUserOrder = inngest.createFunction(
     }
 );
 
-// Sync wishlist events
-console.log("Attempting to register syncWishlist function");
-
+// Sync wishlist events 
 export const syncWishlist = inngest.createFunction(
     {
         id: "sync-wishlist-events"
@@ -119,5 +117,3 @@ export const syncWishlist = inngest.createFunction(
         return { success: true };
     }
 )
-
-console.log("syncWishlist function registration attempted.");
