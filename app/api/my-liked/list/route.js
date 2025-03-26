@@ -8,11 +8,29 @@ export async function GET(request) {
     try {
         await connectDB();
         const { userId } = getAuth(request);
+        if (!userId) {
+            return NextResponse.json(
+                { success: false, message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
         const wishlist = await Wishlist.find({ user: userId })
-            .populate('product')
+            .populate({
+                path: 'product',
+                select: 'name price offerPrice image category unit'
+            })
             .sort({ createdAt: -1 });
-        return NextResponse.json({ success: true, wishlist });
+
+        return NextResponse.json({
+            success: true,
+            wishlist: wishlist.filter(item => item.product !== null)
+        });
     } catch (error) {
-        return NextResponse.json({ success: false, message: error.message });
+        console.error("Wishlist list error:", error);
+        return NextResponse.json(
+            { success: false, message: "Internal server error" },
+            { status: 500 }
+        );
     }
 }

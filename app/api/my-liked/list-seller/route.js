@@ -8,15 +8,15 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
     try {
         await connectDB();
-        const { userId } = getAuth(userId);
+        const { userId } = getAuth(request);
         const { isSeller } = await authSeller(userId);
         if (!isSeller) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
         const wishlistStats = await Wishlist.aggregate([
             {
                 $group: {
                     _id: "$product",
-                    count: {$sum: 1},
-                    users: {$addToSet: "$user"}
+                    count: { $sum: 1 },
+                    users: { $addToSet: "$user" }
                 }
             },
             {
@@ -25,13 +25,13 @@ export async function GET(request) {
                     localField: "_id",
                     foreignField: "_id",
                     as: "product"
-                }    
+                }
             },
-            { $unwind: "$product"}
+            { $unwind: "$product" },
+            { $match: { "product": { $ne: null } } },
         ]);
-        return NextResponse.json({success: true, data: wishlistStats});
-
+        return NextResponse.json({ success: true, data: wishlistStats });
     } catch (error) {
-        return NextResponse.json({success: false, message: error.message});
+        return NextResponse.json({ success: false, message: error.message });
     }
 }

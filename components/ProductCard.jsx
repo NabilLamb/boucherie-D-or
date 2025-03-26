@@ -6,17 +6,17 @@ import { getImageSource } from "@/utils/images";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-
-
 const ProductCard = ({ product }) => {
   const { currency, router, addToCart, user } = useAppContext();
   const [isLiked, setIsLiked] = React.useState(false);
 
   useEffect(() => {
     const checkLiked = async () => {
-      if(user){
-        const {data} = await axios.get(`/api/my-liked/list`);
-        setIsLiked(data.wishlist.some(item => item.product._id === product._id));
+      if (user) {
+        const { data } = await axios.get(`/api/my-liked/list`);
+        setIsLiked(
+          data.wishlist.some((item) => item.product._id === product._id)
+        );
       }
     };
     checkLiked();
@@ -24,7 +24,7 @@ const ProductCard = ({ product }) => {
 
   const handleWishlist = async (e) => {
     e.stopPropagation();
-    if(!user){
+    if (!user) {
       toast.error("Please login to save items");
       return;
     }
@@ -33,19 +33,25 @@ const ProductCard = ({ product }) => {
       const newState = !isLiked;
       setIsLiked(newState);
 
-      const endpoint = newState ? "/api/my-liked/create" : "/api/my-liked/delete";
+      const endpoint = newState
+        ? "/api/my-liked/create"
+        : "/api/my-liked/delete";
       await axios.post(endpoint, {
         userId: user.id,
-        productId: product._id
+        productId: product._id,
       });
-      toast.success(newState ? "Added to favorites": "Removed from favorites");
+      toast.success(newState ? "Added to favorites" : "Removed from favorites");
     } catch (error) {
-      toast.error("Failed to update favorites");
+      setIsLiked(!newState);
+      toast.error(
+        error.response?.data?.message || "Failed to update favorites"
+      );
+      console.error("Wishlist error:", error);
     }
-  }
+  };
 
   const imageSrc = getImageSource(product.image);
-
+  
   // Toggle heart color
   const handleHeartClick = (e) => {
     e.stopPropagation();
@@ -62,7 +68,7 @@ const ProductCard = ({ product }) => {
     >
       {/* Image Section */}
       <div className="relative w-full h-52 rounded-lg overflow-hidden bg-gray-50">
-      <Image
+        <Image
           src={imageSrc}
           alt={product.name}
           width={400}

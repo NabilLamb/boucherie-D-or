@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const WishlistSchema = new mongoose.Schema({
     user: {
-        type: Stirng,
+        type: String,
         ref: "User",
         required: true
     },

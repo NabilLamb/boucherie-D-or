@@ -99,10 +99,10 @@ export const createUserOrder = inngest.createFunction(
     }
 );
 
-// Sync wishlist events
+// Sync wishlist events 
 export const syncWishlist = inngest.createFunction(
     {
-        id: "syc-wishlist-events"
+        id: "sync-wishlist-events"
     },
     {
         event: "wishlist/updated"
@@ -113,7 +113,7 @@ export const syncWishlist = inngest.createFunction(
         if (action === 'add') {
             await Wishlist.create({ user: userId, product: productId });
         } else {
-            await Wishlist.findByIdAndDelete({ user: userId, product: productId });
+            await Wishlist.findOneAndDelete({ user: userId, product: productId });
         }
 
         return { success: true };

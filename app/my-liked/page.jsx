@@ -2,9 +2,10 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import Loading from "@/components/Loading";
+import { HeartIcon } from "@/assets/assets";
 
 const page = () => {
   const { user } = useAppContext();
