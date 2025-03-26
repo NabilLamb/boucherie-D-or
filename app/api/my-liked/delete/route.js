@@ -1,13 +1,13 @@
 // app/api/my-liked/delete/route.js
-"use server"
 import { NextResponse } from "next/server";
 import Wishlist from "@/models/Wishlist";
+import connectDB from "@/config/db";
 
 export async function POST(request) {
     try {
+        await connectDB();
         const { userId, productId } = await request.json();
         
-        // Validate input
         if (!userId || !productId) {
             return NextResponse.json(
                 { success: false, message: "Missing required fields" },
@@ -15,7 +15,6 @@ export async function POST(request) {
             );
         }
 
-        // Atomic delete operation
         const result = await Wishlist.deleteOne({ 
             user: userId, 
             product: productId 

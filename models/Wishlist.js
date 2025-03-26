@@ -1,4 +1,6 @@
 // models/Wishlist.js
+import mongoose from 'mongoose';
+
 const WishlistSchema = new mongoose.Schema({
     user: {
         type: String,
@@ -18,4 +20,4 @@ const WishlistSchema = new mongoose.Schema({
 
 WishlistSchema.index({ user: 1, product: 1 }, { unique: true });
 
-export default mongoose.models.Wishlist || mongoose.model("Wishlist", WishlistSchema);
+export default mongoose.models.Wishlist || mongoose.model('Wishlist', WishlistSchema);
