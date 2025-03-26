@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-
+// models/Wishlist.js
 const WishlistSchema = new mongoose.Schema({
     user: {
         type: String,
@@ -16,5 +15,7 @@ const WishlistSchema = new mongoose.Schema({
         default: Date.now
     }
 });
+
+WishlistSchema.index({ user: 1, product: 1 }, { unique: true });
 
 export default mongoose.models.Wishlist || mongoose.model("Wishlist", WishlistSchema);

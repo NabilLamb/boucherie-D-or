@@ -2,7 +2,6 @@ import { Inngest } from "inngest";
 import connectDB from "./db";
 import User from "@/models/user";
 import Order from "@/models/Order";
-import Product from "@/models/Product";
 import Wishlist from "@/models/Wishlist";
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "goldenbutcher-next" });
@@ -97,23 +96,3 @@ export const createUserOrder = inngest.createFunction(
     }
 );
 
-// Sync wishlist events 
-export const syncWishlist = inngest.createFunction(
-    {
-        id: "sync-wishlist-events"
-    },
-    {
-        event: "wishlist/updated"
-    },
-    async ({ event }) => {
-        await connectDB();
-        const { userId, productId, action } = event.data;
-        if (action === 'add') {
-            await Wishlist.create({ user: userId, product: productId });
-        } else {
-            await Wishlist.findOneAndDelete({ user: userId, product: productId });
-        }
-
-        return { success: true };
-    }
-)

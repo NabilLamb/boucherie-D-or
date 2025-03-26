@@ -1,5 +1,4 @@
 "use client";
-import { productsDummyData } from "@/assets/assets";
 import { useAuth, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -13,7 +12,6 @@ export const useAppContext = () => {
 };
 
 export const AppContextProvider = (props) => {
-
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
   const router = useRouter();
 
@@ -24,16 +22,21 @@ export const AppContextProvider = (props) => {
   const [userData, setUserData] = useState(false);
   const [isSeller, setIsSeller] = useState(false);
   const [cartItems, setCartItems] = useState({});
+  const [wishlist, setWishlist] = useState([]);
 
-   const fetchProductData = async () => {
+  const updateWishlist = (newWishlist) => {
+    setWishlist(newWishlist);
+  };
+
+  const fetchProductData = async () => {
     try {
-      const {data} = await axios.get('/api/product/list');
-      if(data.success){
+      const { data } = await axios.get("/api/product/list");
+      if (data.success) {
         setProducts(data.products);
-      }else{
+      } else {
         toast.error(data.message);
       }
-    }catch (error){
+    } catch (error) {
       toast.error(error.message);
     }
   };
@@ -70,11 +73,15 @@ export const AppContextProvider = (props) => {
       cartData[itemId] = 1;
     }
     setCartItems(cartData);
-    if(user){
+    if (user) {
       try {
         const token = await getToken();
-        await axios.post('/api/cart/update', {cartData}, {headers:{Authorization: `Bearer ${token}`}});
-        toast.success('Item added to cart')
+        await axios.post(
+          "/api/cart/update",
+          { cartData },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Item added to cart");
       } catch (error) {
         toast.error(error.message);
       }
@@ -89,10 +96,14 @@ export const AppContextProvider = (props) => {
       cartData[itemId] = quantity;
     }
     setCartItems(cartData);
-    if(user){
+    if (user) {
       try {
         const token = await getToken();
-        await axios.post('/api/cart/update', {cartData}, {headers:{Authorization: `Bearer ${token}`}});
+        await axios.post(
+          "/api/cart/update",
+          { cartData },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         // toast.success('Cart Updated')
       } catch (error) {
         toast.error(error.message);
@@ -101,13 +112,14 @@ export const AppContextProvider = (props) => {
   };
 
   const getCartCount = () => {
-    return Object.keys(cartItems).filter(itemId => cartItems[itemId] > 0).length;
+    return Object.keys(cartItems).filter((itemId) => cartItems[itemId] > 0)
+      .length;
   };
 
   const getCartAmount = () => {
     let totalAmount = 0;
     for (const itemId in cartItems) {
-      const product = products.find(p => p._id === itemId);
+      const product = products.find((p) => p._id === itemId);
       if (product && cartItems[itemId] > 0) {
         const price = product.offerPrice || product.price;
         totalAmount += price * cartItems[itemId];
@@ -143,6 +155,8 @@ export const AppContextProvider = (props) => {
     updateCartQuantity,
     getCartCount,
     getCartAmount,
+    wishlist,
+    updateWishlist
   };
 
   return (

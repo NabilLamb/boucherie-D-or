@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from "react";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
@@ -5,48 +6,41 @@ import { assets } from "@/assets/assets";
 import { getImageSource } from "@/utils/images";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { HeartIcon } from "@/assets/assets";
 
 const ProductCard = ({ product }) => {
-  const { currency, router, addToCart, user } = useAppContext();
+  const { currency, router, addToCart, user, wishlist, updateWishlist } =
+    useAppContext();
   const [isLiked, setIsLiked] = React.useState(false);
 
   useEffect(() => {
-    const checkLiked = async () => {
-      if (user) {
-        const { data } = await axios.get(`/api/my-liked/list`);
-        setIsLiked(
-          data.wishlist.some((item) => item.product._id === product._id)
-        );
-      }
-    };
-    checkLiked();
-  }, [user, product._id]);
+    const isProductLiked = wishlist.some(item => item.product._id === product._id);
+    setIsLiked(isProductLiked);
+  }, [wishlist, product._id]);
+
 
   const handleWishlist = async (e) => {
     e.stopPropagation();
-    if (!user) {
-      toast.error("Please login to save items");
-      return;
-    }
+    if (!user) return toast.error("Please login");
+
+    const originalWishlist = [...wishlist];
+    const newState = !isLiked;
+    
+    // Optimistic update logic
+    const tempWishlist = newState
+      ? [...wishlist.filter(item => item.product._id !== product._id), { product }] // Ensure no duplicates
+      : wishlist.filter(item => item.product._id !== product._id);
+
+    updateWishlist(tempWishlist);
 
     try {
-      const newState = !isLiked;
-      setIsLiked(newState);
-
-      const endpoint = newState
-        ? "/api/my-liked/create"
-        : "/api/my-liked/delete";
-      await axios.post(endpoint, {
-        userId: user.id,
-        productId: product._id,
-      });
-      toast.success(newState ? "Added to favorites" : "Removed from favorites");
-    } catch (error) {
-      setIsLiked(!newState);
-      toast.error(
-        error.response?.data?.message || "Failed to update favorites"
+      await axios.post(
+        newState ? "/api/my-liked/create" : "/api/my-liked/delete",
+        { userId: user.id, productId: product._id }
       );
-      console.error("Wishlist error:", error);
+    } catch (error) {
+      updateWishlist(originalWishlist);
+      toast.error(error.response?.data?.message || "Failed to update favorites");
     }
   };
 
@@ -74,27 +68,12 @@ const ProductCard = ({ product }) => {
         />
 
         {/* Custom Heart Button */}
+
         <button
           onClick={handleWishlist}
-          className="absolute top-2 right-2 p-1.5 rounded-full bg-white shadow-sm hover:shadow-md"
-          aria-label={isLiked ? "Remove from favorites" : "Add to favorites"}
+          className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            className={`w-6 h-6 transition-colors ${
-              isLiked
-                ? "fill-red-500 stroke-red-500"
-                : "fill-white stroke-black"
-            }`}
-            strokeWidth="1.5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-            />
-          </svg>
+          <HeartIcon filled={isLiked} className="w-6 h-6" />
         </button>
       </div>
 

@@ -6,17 +6,24 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Loading from "@/components/Loading";
 import { HeartIcon } from "@/assets/assets";
+import ProductCard from "@/components/ProductCard";
+import { toast } from "react-hot-toast";
 
 const page = () => {
-  const { user } = useAppContext();
-  const [wishlist, setWishlist] = useState([]);
+  const { user, wishlist, updateWishlist } = useAppContext();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
         const { data } = await axios.get("/api/my-liked/list");
-        setWishlist(data.wishlist);
+        const uniqueProducts = data.wishlist.reduce((acc, current) => {
+          if (!acc.find((item) => item.product._id === current.product._id)) {
+            acc.push(current);
+          }
+          return acc;
+        }, []);
+        updateWishlist(uniqueProducts);
       } finally {
         setLoading(false);
       }
@@ -51,8 +58,8 @@ const page = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {wishlist.map(({ product }) => (
-                <ProductCard key={product._id} product={product} />
+              {wishlist.map((item) => (
+                <ProductCard key={item.product._id} product={item.product} />
               ))}
             </div>
           )}
