@@ -97,7 +97,9 @@ export const createUserOrder = inngest.createFunction(
     }
 );
 
-// Sync wishlist events 
+// Sync wishlist events
+console.log("Attempting to register syncWishlist function");
+
 export const syncWishlist = inngest.createFunction(
     {
         id: "sync-wishlist-events"
@@ -117,3 +119,5 @@ export const syncWishlist = inngest.createFunction(
         return { success: true };
     }
 )
+
+console.log("syncWishlist function registration attempted.");
