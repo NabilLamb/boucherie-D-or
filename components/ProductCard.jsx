@@ -51,12 +51,6 @@ const ProductCard = ({ product }) => {
   };
 
   const imageSrc = getImageSource(product.image);
-  
-  // Toggle heart color
-  const handleHeartClick = (e) => {
-    e.stopPropagation();
-    setIsLiked(!isLiked);
-  };
 
   return (
     <div
@@ -81,7 +75,7 @@ const ProductCard = ({ product }) => {
 
         {/* Custom Heart Button */}
         <button
-          onClick={handleHeartClick}
+          onClick={handleWishlist}
           className="absolute top-2 right-2 p-1.5 rounded-full bg-white shadow-sm hover:shadow-md"
         >
           <svg
