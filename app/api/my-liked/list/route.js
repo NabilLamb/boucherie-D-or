@@ -1,3 +1,4 @@
+"use server"
 import connectDB from "@/config/db";
 import Wishlist from "@/models/Wishlist";
 import { getAuth } from "@clerk/nextjs/server";

@@ -1,4 +1,4 @@
-"use client";
+"use server";
 import connectDB from "@/config/db";
 import authSeller from "@/lib/authSeller";
 import Wishlist from "@/models/Wishlist";

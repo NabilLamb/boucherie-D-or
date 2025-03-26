@@ -79,8 +79,6 @@ export const createUserOrder = inngest.createFunction(
     { event: 'order/created' },
     async ({ events }) => {
         await connectDB();
-        // Force fresh model
-
         const orders = events.map((event) => ({
             userId: event.data.userId,
             items: event.data.items.map(item => ({
