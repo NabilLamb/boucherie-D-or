@@ -98,3 +98,24 @@ export const createUserOrder = inngest.createFunction(
         return { success: true, processed: orders.length };
     }
 );
+
+// Sync wishlist events
+export const syncWishlist = inngest.createFunction(
+    {
+        id: "syc-wishlist-events"
+    },
+    {
+        event: "wishlist/updated"
+    },
+    async ({ event }) => {
+        await connectDB();
+        const { userId, productId, action } = event.data;
+        if (action === 'add') {
+            await Wishlist.create({ user: userId, product: productId });
+        } else {
+            await Wishlist.findByIdAndDelete({ user: userId, product: productId });
+        }
+
+        return { success: true };
+    }
+)

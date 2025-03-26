@@ -1,11 +1,48 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import { assets } from "@/assets/assets";
 import { getImageSource } from "@/utils/images";
+import axios from "axios";
+import toast from "react-hot-toast";
+
+
+
 const ProductCard = ({ product }) => {
-  const { currency, router, addToCart } = useAppContext();
+  const { currency, router, addToCart, user } = useAppContext();
   const [isLiked, setIsLiked] = React.useState(false);
+
+  useEffect(() => {
+    const checkLiked = async () => {
+      if(user){
+        const {data} = await axios.get(`/api/my-liked/list`);
+        setIsLiked(data.wishlist.some(item => item.product._id === product._id));
+      }
+    };
+    checkLiked();
+  }, [user, product._id]);
+
+  const handleWishlist = async (e) => {
+    e.stopPropagation();
+    if(!user){
+      toast.error("Please login to save items");
+      return;
+    }
+
+    try {
+      const newState = !isLiked;
+      setIsLiked(newState);
+
+      const endpoint = newState ? "/api/my-liked/create" : "/api/my-liked/delete";
+      await axios.post(endpoint, {
+        userId: user.id,
+        productId: product._id
+      });
+      toast.success(newState ? "Added to favorites": "Removed from favorites");
+    } catch (error) {
+      toast.error("Failed to update favorites");
+    }
+  }
 
   const imageSrc = getImageSource(product.image);
 
@@ -92,7 +129,6 @@ const ProductCard = ({ product }) => {
             )}
           </div>
 
-          {/* Add To Cart Button */}
           {/* Add To Cart Button */}
           <div className="flex justify-end">
             <button
