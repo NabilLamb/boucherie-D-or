@@ -1,113 +1,116 @@
 import React, { useState, useEffect } from "react";
-import { assets } from "@/assets/assets";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import axios from "axios";
 
 const HeaderSlider = () => {
-  const sliderData = [
-    {
-      id: 1,
-      title: "Premium Halal Meats - Quality You Can Taste!",
-      offer: "Special Offer: 20% Off All Beef Cuts",
-      buttonText1: "Shop Now",
-      buttonText2: "Explore Cuts",
-      imgSrc: assets.meatsHeader,
-    },
-    {
-      id: 2,
-      title: "Fresh Vegetables and Fruits - Direct from the Farm",
-      offer: "Limited Time: Buy 5kg Get 1kg Free",
-      buttonText1: "Order Now",
-      buttonText2: "View Selection",
-      imgSrc: assets.VegetablesFruitsHeader,
-    },
-    {
-      id: 3,
-      title: "Complete Your Kitchen - Premium Tools & Accessories",
-      offer: "Bundle Deals Available",
-      buttonText1: "Discover Tools",
-      buttonText2: "See Offers",
-      imgSrc: assets.KitchenToolsHeader,
-    },
-    {
-      id: 5,
-      title: "Traditional Wood Ovens",
-      offer: "Experience the Best of Both Worlds in Baking",
-      buttonText1: "Explore Wood Ovens",
-      buttonText2: "Discover Electric Ovens",
-      imgSrc: assets.WoodOvensHeader,
-},
-  ];
-
+  const [offers, setOffers] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const { data } = await axios.get("/api/products?categoryType=offer");
+        setOffers(data.products);
+      } catch (error) {
+        console.error("Error fetching offers:", error);
+      }
+    };
+    fetchOffers();
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % sliderData.length);
+      setCurrentSlide(prev => (prev + 1) % (offers.length || 1));
     }, 5000);
     return () => clearInterval(interval);
-  }, [sliderData.length]);
+  }, [offers.length]);
 
-  const handleSlideChange = (index) => {
-    setCurrentSlide(index);
-  };
+  if (!offers.length) return null;
 
   return (
-    <div className="overflow-hidden relative w-full">
-      <div
-        className="flex transition-transform duration-700 ease-in-out"
-        style={{
-          transform: `translateX(-${currentSlide * 100}%)`,
-        }}
+    <div className="relative w-full overflow-hidden rounded-xl bg-gray-50 shadow-lg">
+      {/* Slides Container */}
+      <div 
+        className="flex transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {sliderData.map((slide, index) => (
-          <div
-            key={slide.id}
-            className="flex flex-col-reverse md:flex-row items-center justify-between bg-[#E6E9F2] py-8 md:px-14 px-5 mt-6 rounded-xl min-w-full"
+        {offers.map((product) => (
+          <div 
+            key={product._id}
+            className="flex min-w-full flex-col items-center justify-between gap-6 p-8 md:flex-row md:px-16 md:py-12"
           >
-            <div className="md:pl-8 mt-10 md:mt-0">
-              <p className="md:text-base text-orange-600 pb-1">{slide.offer}</p>
-              <h1 className="max-w-lg md:text-[40px] md:leading-[48px] text-2xl font-semibold">
-                {slide.title}
+            {/* Text Content */}
+            <div className="flex flex-1 flex-col items-start space-y-6 md:max-w-xl">
+              <span className="rounded-full bg-red-100 px-4 py-2 text-sm font-medium text-red-600">
+                Limited Offer
+              </span>
+              
+              <h1 className="text-4xl font-bold leading-tight text-gray-900 md:text-5xl">
+                {product.name}
               </h1>
-              <div className="flex items-center mt-4 md:mt-6">
-                <button className="md:px-10 px-7 md:py-2.5 py-2 bg-orange-600 rounded-full text-white font-medium">
-                  {slide.buttonText1}
-                </button>
-                <button className="group flex items-center gap-2 px-6 py-2.5 font-medium">
-                  {slide.buttonText2}
-                  <Image
-                    className="group-hover:translate-x-1 transition"
-                    src={assets.arrow_icon}
-                    alt="arrow_icon"
-                  />
-                </button>
+              
+              <p className="text-lg text-gray-600 md:text-xl">
+                {product.description}
+              </p>
+
+              <div className="flex items-baseline gap-4">
+                {product.offerPrice ? (
+                  <>
+                    <span className="text-3xl font-bold text-red-600 md:text-4xl">
+                      ${product.offerPrice}
+                    </span>
+                    <span className="text-xl text-gray-400 line-through md:text-2xl">
+                      ${product.price}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-bold text-gray-900 md:text-4xl">
+                    ${product.price}
+                  </span>
+                )}
               </div>
+
+              <Link
+                href={`/product/${product._id}`}
+                className="rounded-full bg-red-600 px-8 py-3 text-lg font-medium text-white transition-all hover:bg-red-700 hover:shadow-lg"
+              >
+                Shop Now →
+              </Link>
             </div>
-            <div className="flex items-center flex-1 justify-center">
-              <Image
-                className="md:w-72 w-48"
-                src={slide.imgSrc}
-                alt={`Slide ${index + 1}`}
-                width={500}
-                height={500}
-              />
+
+            {/* Image Container */}
+            <div className="relative flex flex-1 justify-center md:justify-end">
+              <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+                <Image
+                  src={product.image[0]}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-6"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-8">
-        {sliderData.map((_, index) => (
-          <div
-            key={index}
-            onClick={() => handleSlideChange(index)}
-            className={`h-2 w-2 rounded-full cursor-pointer ${
-              currentSlide === index ? "bg-orange-600" : "bg-gray-500/30"
-            }`}
-          ></div>
-        ))}
-      </div>
+      {/* Pagination Dots */}
+      {offers.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 transform gap-2">
+          {offers.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`h-3 w-3 rounded-full transition-all ${
+                index === currentSlide ? 'bg-red-600 w-6' : 'bg-gray-300'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

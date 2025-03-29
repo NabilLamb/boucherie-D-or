@@ -1,117 +1,125 @@
-import React from "react";
-import { assets } from "@/assets/assets";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import Banner from "@/components/Banner";
-
-const products = [
-  {
-    id: 1,
-    image: assets.abdel_meal,
-    title: "Premium Beef Rib Steak",
-    description: "Aged to perfection, ideal for grilling and special occasions.",
-  },
-  {
-    id: 2,
-    image: assets.annais_meal,
-    title: "Stuffed Veal Shank",
-    description: "Traditional recipe with herbs and secret spices stuffing.",
-  },
-  {
-    id: 3,
-    image: assets.abdel_oven,
-    title: "Artisan Wood-Fired Ovens",
-    description: "Traditional baking with modern temperature control.",
-  },
-];
-
+import Link from "next/link";
+import axios from "axios";
+import Banner from "./Banner";
 const FeaturedProduct = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.3 }
-    }
-  };
+  const [featuredProducts, setFeaturedProducts] = useState([]);
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
-  };
-
-  const hoverVariants = {
-    hover: { scale: 1.02 },
-    tap: { scale: 0.98 }
-  };
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        // Changed to fetch 'featured' category type
+        const { data } = await axios.get("/api/products?categoryType=featured");
+        setFeaturedProducts(data.products);
+      } catch (error) {
+        console.error("Error fetching featured products:", error);
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   return (
-    <div id="featuredProducts" className="mt-14 bg-gray-50 py-20 px-4">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="flex flex-col items-center mb-16"
-      >
-        <h2 className="text-4xl font-semibold text-gray-800">Featured Products</h2>
-        <div className="w-32 h-1.5 bg-orange-600 mt-4 rounded-full" />
-      </motion.div>
+    <div className="bg-white py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            Our Specialty Cuts
+          </h2>
+          <p className="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
+            Expertly prepared premium meats selected by our master butchers
+          </p>
+        </div>
 
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto"
-      >
-        {products.map(({ id, image, title, description }) => (
-          <motion.div 
-            key={id}
-            variants={itemVariants}
-            whileHover="hover"
-            whileTap="tap"
-            className="group relative overflow-hidden rounded-2xl shadow-xl h-[600px]"
-          >
-            <motion.div
-              variants={hoverVariants}
-              className="h-full w-full"
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {featuredProducts.map((product) => (
+            <div 
+              key={product._id}
+              className="flex flex-col overflow-hidden rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl bg-white"
             >
-              <Image
-                src={image}
-                alt={title}
-                className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-                width={800}
-                height={800}
-                priority
-              />
-            </motion.div>
+              {/* Product Image with Meat Badge */}
+              <div className="relative aspect-square">
+                <Image
+                  src={product.image[0]}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+                <span className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  Featured Cut
+                </span>
+              </div>
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-8 flex flex-col justify-end">
-              <div className="space-y-4 text-white">
-                <h3 className="text-3xl font-bold">{title}</h3>
-                <p className="text-lg leading-relaxed opacity-90">{description}</p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 bg-orange-600 px-8 py-4 rounded-lg text-lg font-medium w-fit mt-6 shadow-md hover:shadow-orange-200/30 transition-all"
+              {/* Product Details */}
+              <div className="flex-1 p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                  {product.description}
+                </p>
+                
+                {/* Pricing Information */}
+                <div className="mb-4">
+                  {product.offerPrice ? (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-red-600">
+                        ${product.offerPrice}
+                      </span>
+                      <span className="text-gray-400 line-through">
+                        ${product.price}
+                      </span>
+                      <span className="text-sm text-gray-500 ml-1">
+                        /{product.unit}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline">
+                      <span className="text-2xl font-bold text-gray-900">
+                        ${product.price}
+                      </span>
+                      <span className="text-sm text-gray-500 ml-1">
+                        /{product.unit}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Butcher's Notes */}
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <svg
+                      className="w-5 h-5 mr-2 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>Dry-aged for 28 days</span> {/* Customize this based on your actual data */}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="px-6 pb-6">
+                <Link
+                  href={`/product/${product._id}`}
+                  className="block w-full text-center bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
                 >
-                  Shop Now
-                  <Image 
-                    src={assets.redirect_icon} 
-                    alt="Arrow" 
-                    className="h-5 w-5"
-                    width={20}
-                    height={20}
-                  />
-                </motion.button>
+                  Select Cut
+                </Link>
               </div>
             </div>
-          </motion.div>
-        ))}
-      </motion.div>
-
+          ))}
+        </div>
+      </div>
       <Banner />
     </div>
   );

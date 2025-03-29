@@ -1,80 +1,113 @@
-import React from "react";
-import { assets } from "@/assets/assets";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import axios from "axios";
 
 const Banner = () => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      className="flex flex-col md:flex-row items-center justify-between md:pl-20 py-14 md:py-0 bg-[#f5e6d3] my-16 rounded-xl overflow-hidden relative"
-    >
-      {/* Left Side - Meat Image */}
-      <motion.div 
-        whileHover={{ scale: 1.05 }}
-        className="max-w-[300px] md:max-w-[400px] lg:max-w-[500px]"
-      >
-        <Image
-          src={assets.PremiumAngusBeefSteak_image}
-          alt="Premium Angus Beef"
-          className="w-64 rotate-[-15deg] hover:rotate-0 transition-transform duration-300"
-        />
-      </motion.div>
+  const [bannerProducts, setBannerProducts] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-      {/* Center Content */}
-      <div className="flex flex-col items-center justify-center text-center space-y-4 px-4 md:px-0 z-10">
-        <motion.h2 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-3xl md:text-4xl font-bold max-w-[320px] text-[#3a1f0a]"
-        >
-          Crafted with Passion, <span className="text-[#c2410c]">Perfection</span> in Every Cut
-        </motion.h2>
-        
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="max-w-[400px] text-lg font-medium text-[#5a3921]"
-        >
-          Experience premium quality meats, expertly butchered and prepared to elevate your culinary creations
-        </motion.p>
-        
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="group flex items-center justify-center gap-2 px-8 py-3 bg-[#c2410c] rounded-lg text-white shadow-lg hover:bg-[#9c320a] transition-all duration-300"
-        >
-          <span className="font-semibold text-lg">Shop Now</span>
-          <Image 
-            className="group-hover:translate-x-2 transition-transform" 
-            src={assets.arrow_icon_white} 
-            alt="arrow_icon_white" 
-            width={20}
-            height={20}
-          />
-        </motion.button>
+  useEffect(() => {
+    const fetchBannerProducts = async () => {
+      try {
+        const { data } = await axios.get("/api/products?categoryType=banner");
+        setBannerProducts(data.products.slice(0, 2)); // Get first 2 banner products
+      } catch (error) {
+        console.error("Error fetching banner products:", error);
+      }
+    };
+    fetchBannerProducts();
+  }, []);
+
+  useEffect(() => {
+    if (bannerProducts.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentSlide(prev => (prev + 1) % bannerProducts.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [bannerProducts.length]);
+
+  if (!bannerProducts.length) return null;
+
+  return (
+    <div className="relative mx-auto my-12 max-w-7xl overflow-hidden rounded-2xl shadow-xl">
+      <div className="flex transition-transform duration-500 ease-in-out"
+           style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+        {bannerProducts.map((product, index) => (
+          <div key={product._id} className="relative flex min-w-full flex-col md:flex-row">
+            {/* Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-red-900/80 to-red-800/60" />
+            
+            {/* Content */}
+            <div className="relative z-10 flex flex-1 flex-col justify-center p-8 text-white md:p-12 lg:p-16">
+              <span className="mb-2 inline-block rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
+                Special Selection
+              </span>
+              <h2 className="text-4xl font-bold leading-tight md:text-5xl">
+                {product.name}
+              </h2>
+              <p className="mt-4 max-w-md text-lg opacity-90">
+                {product.description}
+              </p>
+              <div className="mt-6 flex items-baseline gap-4">
+                {product.offerPrice ? (
+                  <>
+                    <span className="text-3xl font-bold md:text-4xl">
+                      ${product.offerPrice}
+                    </span>
+                    <span className="text-xl text-red-200 line-through">
+                      ${product.price}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-bold md:text-4xl">
+                    ${product.price}
+                  </span>
+                )}
+                <span className="text-lg text-red-200">/{product.unit}</span>
+              </div>
+              <Link
+                href={`/product/${product._id}`}
+                className="mt-8 inline-block w-fit rounded-full bg-white px-8 py-3 text-lg font-semibold text-red-600 transition-all hover:bg-opacity-90"
+              >
+                Shop Now →
+              </Link>
+            </div>
+
+            {/* Images */}
+            <div className="relative flex flex-1 items-center justify-center p-8">
+              <div className="relative aspect-square w-full max-w-xl">
+                <Image
+                  src={product.image[0]}
+                  alt={product.name}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Right Side - Butcher/Oven Image */}
-      <motion.div 
-        whileHover={{ scale: 1.05 }}
-        className="hidden md:block max-w-[400px] lg:max-w-[500px] relative"
-      >
-        <Image
-          src={assets.abdel_oven}
-          alt="Artisan Butcher"
-          className="rounded-lg transform -scale-x-100"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#f5e6d3] via-transparent to-[#f5e6d3] w-full h-full" />
-      </motion.div>
-
-      {/* Background Elements */}
-      <div className="absolute inset-0 opacity-10 bg-[url('/path/to/grill-pattern.png')]" />
-    </motion.div>
+      {/* Pagination */}
+      {bannerProducts.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 transform gap-2">
+          {bannerProducts.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`h-2 w-8 rounded-full transition-all ${
+                index === currentSlide ? 'bg-white' : 'bg-white/50'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

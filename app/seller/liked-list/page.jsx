@@ -16,7 +16,6 @@ import Footer from "@/components/seller/Footer";
 // Lazy load the chart component
 const WishlistStats = dynamic(() => import("@/components/seller/WishlistStats"), {
   ssr: false,
-  loading: () => <div className="h-96 bg-gray-50 animate-pulse rounded-xl" />,
 });
 
 export default function Page() {
@@ -41,6 +40,8 @@ export default function Page() {
     fetchData();
   }, [getToken]);
 
+  if (loading) return <Loading />;
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 py-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
@@ -53,9 +54,6 @@ export default function Page() {
         </p>
       </header>
 
-      {loading ? (
-        <Loading />
-      ) : (
         <div className="space-y-8">
           {/* Key Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -152,7 +150,6 @@ export default function Page() {
             </div>
           </div>
         </div>
-      )}
       <Footer/>
     </div>
   );

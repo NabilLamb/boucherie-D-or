@@ -5,6 +5,8 @@ import OrderList from "@/components/OrderList/OrderList";
 import Footer from "@/components/seller/Footer";
 import toast from "react-hot-toast";
 import axios from "axios";
+import Loading from "@/components/Loading";
+
 
 const Orders = () => {
   const { currency, getToken, user } = useAppContext();
@@ -81,16 +83,20 @@ const Orders = () => {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       if (data.success) {
-        setOrders(prev => prev.map(order => 
-          order._id === orderId ? { ...order, status: newStatus } : order
-        ));
+        setOrders((prev) =>
+          prev.map((order) =>
+            order._id === orderId ? { ...order, status: newStatus } : order
+          )
+        );
         toast.success("Status updated successfully");
-        
-        setFilteredOrders(prev => prev.map(order => 
-          order._id === orderId ? { ...order, status: newStatus } : order
-        ));
+
+        setFilteredOrders((prev) =>
+          prev.map((order) =>
+            order._id === orderId ? { ...order, status: newStatus } : order
+          )
+        );
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
@@ -99,19 +105,20 @@ const Orders = () => {
 
   const statsList = [
     { title: "Total Orders", value: stats.totalOrders },
-    { title: "Total Spent", value: `${currency}${stats.totalSpent.toFixed(2)}` },
+    {
+      title: "Total Spent",
+      value: `${currency}${stats.totalSpent.toFixed(2)}`,
+    },
     { title: "Avg. Order", value: `${currency}${stats.avgOrder.toFixed(2)}` },
   ];
-
+  if (loading) return <Loading />;
   return (
     <div className="min-h-screen bg-gray-50">
-      
       <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
         <OrderList
           orders={filteredOrders}
           currency={currency}
           stats={statsList}
-          loading={loading}
           startDate={startDate}
           setStartDate={setStartDate}
           endDate={endDate}

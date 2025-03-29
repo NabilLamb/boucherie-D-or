@@ -17,13 +17,11 @@ import {
 import Image from "next/image";
 import { getImageSource } from "@/utils/images";
 import Invoice from "@/components/Invoice/Invoice";
-import Loading from "@/components/Loading";
 
 const OrderList = ({
   orders,
   currency,
   stats,
-  loading,
   startDate,
   setStartDate,
   endDate,
@@ -139,9 +137,9 @@ const StatusIndicator = ({ status }) => {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 capitalize">
+                  {/* <p className="text-xs text-gray-500 capitalize">
                     Category: {snapshot?.category || "Uncategorized"}
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
@@ -208,17 +206,7 @@ const StatusIndicator = ({ status }) => {
       </div>
 
       {/* Orders List */}
-      {loading ? (
-        <div className="flex justify-center p-12">
-          <Loading />
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="bg-white p-8 rounded-xl text-center">
-          <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">No orders found</h3>
-          <p className="text-gray-500 mt-2">Try adjusting your filters</p>
-        </div>
-      ) : (
+      
         <div className="space-y-4">
           {orders.map((order) => (
             <div
@@ -348,7 +336,6 @@ const StatusIndicator = ({ status }) => {
             </div>
           ))}
         </div>
-      )}
 
       {/* Invoice Modal */}
       {invoiceOrderId && (

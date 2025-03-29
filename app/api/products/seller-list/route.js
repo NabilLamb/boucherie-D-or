@@ -18,8 +18,7 @@ export async function GET(request) {
         }
 
         await connectDB()
-        // Filter products by seller's userId
-        const products = await Product.find({ userId })
+        const products = await Product.find({}).populate('category', 'name');
         
         return NextResponse.json(
             { success: true, products },

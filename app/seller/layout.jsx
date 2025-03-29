@@ -1,32 +1,49 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import SideBar from "@/components/seller/Sidebar";
 import Navbar from "@/components/seller/Navbar";
-import Footer from "@/components/seller/Footer";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 
+export default function Layout({ children, modal }) {
+  const pathname = usePathname();
 
-export default function Layout({ children }) {
+  // Centralize isCollapsed state here so the layout and sidebar widths stay in sync
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <div className="flex w-screen h-screen overflow-hidden">
-      {/* LEFT SIDEBAR */}
-      <div className="md:w-64 w-16 shrink-0 border-r border-gray-300">
-        <SideBar />
+      {/* LEFT SIDEBAR - Dynamic width */}
+      <div
+        className={`transition-all duration-300 ${
+          isCollapsed ? "w-16" : "w-64"
+        } border-r border-gray-300`}
+      >
+        <SideBar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
 
-      {/* RIGHT SIDE: NAV + CONTENT + FOOTER */}
-      <div className="flex flex-col w-full">
-        {/* NAVBAR (sticky at top) */}
+      {/* RIGHT SIDE: NAV + CONTENT */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Navbar */}
         <div className="sticky top-0 z-50">
           <Navbar />
         </div>
 
-        {/* MAIN SCROLLABLE CONTENT */}
-        <div className="flex-grow overflow-auto bg-gray-50">
-          {children}
-        </div>
-
-        {/* FOOTER (sticky at bottom) */}
-        
+        {/* Main Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex-grow overflow-auto bg-gray-50"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

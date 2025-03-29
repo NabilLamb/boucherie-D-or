@@ -21,10 +21,10 @@ export async function GET(request) {
 
         Address.length
 
-        const orders = await Order.find({ userId })
+        const orders = await Order.find({})
             .populate({
                 path: 'items.product',
-                select: 'name price offerPrice image'
+                select: 'name price offerPrice image category',
             })
             .populate({
                 path: 'address',

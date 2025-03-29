@@ -2,7 +2,7 @@
 import { useAuth, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 
 export const AppContext = createContext();
@@ -24,47 +24,62 @@ export const AppContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const [wishlist, setWishlist] = useState([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(true);
+  
 
-  const updateWishlist = (newWishlist) => {
-    setWishlist(newWishlist);
-  };
-
-  const fetchProductData = async () => {
+  // Memoize fetchProducts
+  const fetchProducts = useCallback(async () => {
     try {
-      const { data } = await axios.get("/api/product/list");
-      if (data.success) {
-        setProducts(data.products);
-      } else {
-        toast.error(data.message);
+      const { data } = await axios.get("/api/products");
+      if (data.products) {
+        setProducts((prev) => {
+          const prevIds = prev.map(p => p._id).sort();
+          const newIds = data.products.map(p => p._id).sort();
+          if (JSON.stringify(prevIds) === JSON.stringify(newIds)) {
+            return prev; // Avoid re-render if products are the same
+          }
+          return data.products;
+        });
       }
     } catch (error) {
-      toast.error(error.message);
+      console.error("Failed to fetch products:", error);
+      toast.error("Failed to load products");
     }
-  };
+  }, []);
 
-  const fetchUserData = async () => {
-    try {
-      console.log("fetchUserData called");
-      if (user.publicMetadata.role === "seller") {
-        setIsSeller(true);
+    // Memoize fetchUserData
+    const fetchUserData = useCallback(async () => {
+      try {
+        if (user?.publicMetadata?.role === "seller") {
+          setIsSeller(true);
+        }
+        const token = await getToken();
+  
+        const { data } = await axios.get("/api/user/data", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        if (data.success) {
+          setUserData(data.user);
+          setCartItems(data.user.cartItems);
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        console.error("fetchUserData error:", error);
+        toast.error(error.message);
       }
-      const token = await getToken();
-      console.log("Token:", token);
-      const { data } = await axios.get("/api/user/data", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("API response:", data);
-      if (data.success) {
-        setUserData(data.user);
-        setCartItems(data.user.cartItems);
-      } else {
-        toast.error(data.message);
+    }, [user, getToken]);
+  
+    useEffect(() => {
+      if (isLoaded) {
+        fetchProducts();
+        if (user) {
+          fetchUserData();
+        }
       }
-    } catch (error) {
-      console.error("fetchUserData error:", error);
-      toast.error(error.message);
-    }
-  };
+    }, [isLoaded, user, fetchProducts, fetchUserData]);
+
+  
 
   const addToCart = async (itemId) => {
     let cartData = structuredClone(cartItems);
@@ -129,9 +144,6 @@ export const AppContextProvider = (props) => {
     return totalAmount;
   };
 
-  useEffect(() => {
-    fetchProductData();
-  }, []);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -180,7 +192,7 @@ export const AppContextProvider = (props) => {
     userData,
     fetchUserData,
     products,
-    fetchProductData,
+    fetchProducts,
     cartItems,
     setCartItems,
     addToCart,
@@ -191,6 +203,7 @@ export const AppContextProvider = (props) => {
     isWishlistLoading,
     updateWishlist: setWishlist,
     fetchWishlist,
+
   };
 
   return (

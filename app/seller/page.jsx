@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { categories } from "@/assets/categoriesData";
 import Loading from "@/components/Loading";
 import { compressImage, validateImage } from "@/utils/imageProcessor";
 
@@ -16,13 +15,28 @@ const AddProduct = () => {
   const [files, setFiles] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("BEEF");
+  const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [unit, setUnit] = useState("kg");
-  const [showNewCategory, setShowNewCategory] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await axios.get("/api/categories");
+        setCategories(data);
+        
+        if (data.length > 0) {
+          setCategory(data[0]._id);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +49,7 @@ const AddProduct = () => {
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description);
-    formData.append("category", showNewCategory ? newCategory : category);
+    formData.append("category", category);
     formData.append("price", price);
     offerPrice && formData.append("offerPrice", offerPrice);
     formData.append("unit", unit);
@@ -46,7 +60,7 @@ const AddProduct = () => {
 
     try {
       const token = await getToken();
-      const { data } = await axios.post("/api/product/add", formData, {
+      const { data } = await axios.post("/api/products/add", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -75,12 +89,14 @@ const AddProduct = () => {
         setFiles([]);
         setName("");
         setDescription("");
-        setCategory("BEEF");
+        if (categories.length > 0) {
+          setCategory(categories[0]._id);
+        } else {
+          setCategory("");
+        }
         setPrice("");
         setOfferPrice("");
         setUnit("kg");
-        setShowNewCategory(false);
-        setNewCategory("");
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
@@ -298,48 +314,20 @@ const AddProduct = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Category *
                       </label>
-                      {!showNewCategory ? (
-                        <div className="flex gap-2">
-                          <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                          >
-                            {categories.map((cat) => (
-                              <option key={cat.name} value={cat.name}>
-                                {cat.name}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() => setShowNewCategory(true)}
-                            className="whitespace-nowrap px-4 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                          >
-                            + New
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newCategory}
-                            onChange={(e) => setNewCategory(e.target.value)}
-                            placeholder="Enter new category"
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowNewCategory(false);
-                              setNewCategory("");
-                            }}
-                            className="px-4 text-red-600 hover:text-red-700 font-medium transition-colors"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
+
+                      <div className="flex gap-2">
+                        <select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        >
+                          {categories.map((cat) => (
+                            <option key={cat._id} value={cat._id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div>

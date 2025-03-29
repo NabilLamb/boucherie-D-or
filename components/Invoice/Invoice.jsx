@@ -157,9 +157,9 @@ const InvoicePDF = ({ order, companyInfo }) => {
                 <Text style={styles.tableCol}>
                   {item.productSnapshot?.name || "Product Name"}
                   {"\n"}
-                  <Text style={{ color: "#666" }}>
-                    {item.productSnapshot?.category}
-                  </Text>
+                  {/* <Text style={{ color: "#666" }}>
+                    {item.productSnapshot?.category?.name || "Uncategorized"}
+                  </Text> */}
                 </Text>
                 <Text style={styles.tableCol}>
                   {currency}

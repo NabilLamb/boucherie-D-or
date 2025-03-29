@@ -1,5 +1,6 @@
+// app/seller/product-list/page.jsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
@@ -7,14 +8,31 @@ import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
 import axios from "axios";
 import toast from "react-hot-toast";
+import Link from "next/link";
+import { ConfirmDialog } from "primereact/confirmdialog";
+import { Button } from "primereact/button";
+import { Toast } from "primereact/toast";
+import ProductStats from "@/components/seller/ProductStats";
 
 const ProductList = () => {
   const { router, getToken, user } = useAppContext();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  // For controlled ConfirmDialog
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const toastRef = useRef(null);
+  // Sales stats state expects: monthlySales, topProducts, totalSales, totalRevenue
+  const [salesStats, setSalesStats] = useState({
+    monthlySales: [],
+    topProducts: [],
+    totalSales: 0,
+    totalRevenue: 0,
+  });
+
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
-  // Basic statistics calculations
+  // Basic product statistics calculations
   const totalProducts = products.length;
   const categoriesCount = [...new Set(products.map((p) => p.category))].length;
   const averagePrice =
@@ -25,11 +43,12 @@ const ProductList = () => {
     try {
       setLoading(true);
       const token = await getToken();
-      const { data } = await axios.get("/api/product/seller-list", {
+      const { data } = await axios.get("/api/products/seller-list", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (data.success) {
-        setProducts(data.products);
+        const sortedProducts = data.products.sort((a, b) => b.date - a.date);
+        setProducts(sortedProducts);
       } else {
         toast.error(data.message);
       }
@@ -40,24 +59,109 @@ const ProductList = () => {
     }
   };
 
+  // Fetch sales data from the API route
+  const fetchSalesData = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.get("/api/products/sales", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log(data);
+      if (data.success) {
+        setSalesStats({
+          monthlySales: data.monthlySales,
+          topProducts: data.topProducts,
+          totalSales: data.totalSales,
+          totalRevenue: data.totalRevenue,
+        });
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to load sales data");
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchSellerProduct();
+      fetchSalesData();
     }
   }, [user]);
+
+  // When user clicks Delete, open the confirm dialog and store the product id.
+  const showDeleteConfirm = (productId) => {
+    setSelectedProductId(productId);
+    setConfirmVisible(true);
+  };
+
+  // Called when user clicks Yes on the confirm dialog.
+  const onAccept = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.delete(`/api/products/${selectedProductId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data.success) {
+        toast.success("Product deleted successfully");
+        fetchSellerProduct();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Delete failed");
+    } finally {
+      setConfirmVisible(false);
+      setSelectedProductId(null);
+    }
+  };
 
   if (loading) return <Loading />;
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between bg-gray-50">
-      <div className="w-full md:p-8 p-4">
-        {loading && (
-          <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
-            <Loading />
+      <Toast ref={toastRef} />
+      <ConfirmDialog
+        visible={confirmVisible}
+        onHide={() => setConfirmVisible(false)}
+        content={() => (
+          <div
+            className="flex flex-col items-center p-5 bg-white shadow-lg rounded-lg"
+            style={{ minWidth: "400px" }}
+          >
+            {/* Red Warning Icon */}
+            <div className="bg-red-100 rounded-full p-4 -mt-8 flex justify-center items-center">
+              <i className="pi pi-exclamation-triangle text-red-600 text-4xl" />
+            </div>
+
+            {/* Dialog Content */}
+            <h3 className="text-xl font-bold mt-4 mb-2">Delete Product</h3>
+            <p className="text-gray-600 mb-4 text-center">
+              Are you sure you want to delete this product? This action cannot
+              be undone.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex gap-3 w-full justify-end">
+              <Button
+                label="Cancel"
+                outlined
+                onClick={() => setConfirmVisible(false)}
+                className="px-4 py-2"
+              />
+              <Button
+                label="Delete"
+                severity="danger"
+                onClick={onAccept}
+                className="px-4 py-2"
+              />
+            </div>
           </div>
         )}
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      />
+
+      <div className="w-full md:p-8 p-4">
+        {/* Sales Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h3 className="text-gray-500 text-sm font-medium">
               Total Products
@@ -79,9 +183,20 @@ const ProductList = () => {
               {averagePrice.toFixed(2)}
             </p>
           </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 className="text-gray-500 text-sm font-medium">Total Revenue</h3>
+            <p className="text-2xl font-bold text-gray-900 mt-2">
+              {currency}
+              {salesStats.totalRevenue?.toFixed(2)}
+            </p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Render ProductStats with fetched sales stats */}
+        <ProductStats stats={salesStats} />
+
+        {/* Product Inventory Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-10">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800">
               Product Inventory
@@ -148,13 +263,11 @@ const ProductList = () => {
                           </div>
                         </div>
                       </td>
-
                       <td className="px-6 py-4 text-sm text-gray-500 hidden md:table-cell">
                         <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800">
-                          {product.category}
+                          {product.category?.name}
                         </span>
                       </td>
-
                       <td className="px-6 py-4 text-sm text-gray-900">
                         {product.offerPrice ? (
                           <div className="flex flex-col">
@@ -174,27 +287,29 @@ const ProductList = () => {
                           </span>
                         )}
                       </td>
-
                       <td className="px-6 py-4 text-right text-sm font-medium">
-                        <button
-                          onClick={() => router.push(`/product/${product._id}`)}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center justify-end w-full"
-                        >
-                          View
-                          <svg
-                            className="w-4 h-4 ml-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        <div className="flex justify-end space-x-2">
+                          <Link
+                            href={`/seller/edit-product/${product._id}`}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md transition-colors"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </button>
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => showDeleteConfirm(product._id)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md transition-colors"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={() =>
+                              router.push(`/product/${product._id}`)
+                            }
+                            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-md transition-colors"
+                          >
+                            View
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -204,7 +319,6 @@ const ProductList = () => {
           )}
         </div>
       </div>
-
       <Footer />
     </div>
   );
