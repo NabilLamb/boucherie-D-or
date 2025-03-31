@@ -11,7 +11,7 @@ export async function GET(request, { params }) {
     await connectDB();
     const { id } = params;
     // Do NOT populate the category to keep it as an ObjectId
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).populate('category');
 
     if (!product) {
       return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });

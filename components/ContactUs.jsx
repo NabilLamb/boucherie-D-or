@@ -1,17 +1,36 @@
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { assets } from "@/assets/assets";
+import { useState } from "react";
+import axios from "axios";
 
 const ContactSection = () => {
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
   } = useForm();
+  
 
   const onSubmit = async (data) => {
-    // Handle form submission
-    console.log(data);
+    try {
+      const response = await axios.post("/api/email/send", data);
+
+      if (response.data.success) {
+        setSuccessMessage("Message sent successfully!");
+        setErrorMessage("");
+        reset();
+      }
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.error || "Failed to send message"
+      );
+      setSuccessMessage("");
+    }
   };
 
   return (
@@ -95,7 +114,7 @@ const ContactSection = () => {
                       {...register("email", {
                         required: "Email is required",
                         pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$i/,
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                           message: "Invalid email address",
                         },
                       })}
@@ -160,6 +179,18 @@ const ContactSection = () => {
                   </div>
                 </div>
 
+                {successMessage && (
+                  <div className="p-3 mb-4 text-green-800 bg-green-50 rounded-lg">
+                    {successMessage}
+                  </div>
+                )}
+
+                {errorMessage && (
+                  <div className="p-3 mb-4 text-red-800 bg-red-50 rounded-lg">
+                    {errorMessage}
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -208,9 +239,13 @@ const ContactSection = () => {
                       <h3 className="text-xl font-semibold text-gray-900">
                         Our Address
                       </h3>
-                      <p className="mt-2 text-gray-600">ZA Jonquier Morelle</p>
-                      <p className="text-gray-600">Lavoisier Avenue</p>
-                      <p className="text-gray-600">84850 Camaret-sur-Aigues</p>
+                      {process.env.NEXT_PUBLIC_COMPANY_ADDRESS?.split(",").map(
+                        (line, index) => (
+                          <p key={index} className="text-gray-600">
+                            {line.trim()}
+                          </p>
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
@@ -233,7 +268,9 @@ const ContactSection = () => {
                         <h3 className="text-xl font-semibold text-gray-900">
                           Call Us
                         </h3>
-                        <p className="mt-2 text-gray-600">+33 4 90 62 49 06</p>
+                        <p className="mt-2 text-gray-600">
+                          {process.env.NEXT_PUBLIC_COMPANY_PHONE}
+                        </p>
                         <p className="mt-2 text-sm text-gray-500">
                           Mon-Sat: 8AM - 7PM
                         </p>
@@ -257,9 +294,8 @@ const ContactSection = () => {
                         <h3 className="text-xl font-semibold text-gray-900">
                           Email Us
                         </h3>
-                        <p className="mt-2 text-gray-600">
-                          {/* contact@boucheriedor.fr */}
-                          boucheriedor@gmail.com
+                        <p className="mt-2 text-gray-600 break-all whitespace-pre-wrap">
+                          {process.env.NEXT_PUBLIC_COMPANY_EMAIL}
                         </p>
                         <p className="mt-2 text-sm text-gray-500">
                           24h Response Time
@@ -270,7 +306,7 @@ const ContactSection = () => {
                 </div>
 
                 {/* Map */}
-                <div  id="map" className="overflow-hidden rounded-xl shadow-2xl">
+                <div id="map" className="overflow-hidden rounded-xl shadow-2xl">
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d92423.55032243805!2d4.8607425!3d44.1607017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12b599ffd3ed3369%3A0x4a976d91d4b4323c!2sBoucherie%20D&#39;or!5e0!3m2!1sen!2sfr!4v1718877416915!5m2!1sen!2sfr"
                     width="100%"

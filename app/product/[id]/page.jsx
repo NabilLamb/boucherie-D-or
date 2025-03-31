@@ -6,7 +6,7 @@ import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
 import Loading from "@/components/Loading";
 import ProductCard from "@/components/ProductCard";
-import { StarIcon, WeightIcon, AgeIcon, CutIcon } from "@/components/Icons";
+import { StarIcon, WeightIcon, AgeIcon, CutIcon, TypeIcon } from "@/components/Icons";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 const ProductPage = () => {
@@ -22,19 +22,18 @@ const ProductPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch main product
         const { data: productData } = await axios.get(`/api/products/${id}`);
         if (!productData.success) throw new Error(productData.message);
-
+        console.log(productData);
         // Fetch related products
         const { data: relatedData } = await axios.get(
-          `/api/products?category=${productData.product.category}&limit=4`
+          `/api/products?category=${productData.product.category._id}&limit=4`
         );
 
         setProduct(productData.product);
         setRelatedProducts(relatedData.products);
-        
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load product");
       } finally {
@@ -127,8 +126,14 @@ const ProductPage = () => {
               </div>
               {product.offerPrice && (
                 <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg">
-                  Save {((product.price - product.offerPrice) / product.price * 100).toFixed(0)}% - 
-                  {currency}{(product.price - product.offerPrice).toFixed(2)} per {product.unit}
+                  Save{" "}
+                  {(
+                    ((product.price - product.offerPrice) / product.price) *
+                    100
+                  ).toFixed(0)}
+                  % -{currency}
+                  {(product.price - product.offerPrice).toFixed(2)} per{" "}
+                  {product.unit}
                 </div>
               )}
             </div>
@@ -139,7 +144,18 @@ const ProductPage = () => {
                 <CutIcon className="w-8 h-8 text-red-600" />
                 <div>
                   <p className="text-sm text-gray-500">Cut Type</p>
-                  <p className="font-medium">{product.category}</p>
+                  <p className="font-medium">
+                    {product.category?.name} {/* Display category name */}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <TypeIcon className="w-8 h-8 text-red-600" />
+                <div>
+                  <p className="text-sm text-gray-500">Category Type</p>
+                  <p className="font-medium">
+                    {product.category?.type} {/* Display category type */}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -234,25 +250,6 @@ const ProductPage = () => {
       </div>
       {/* Footer */}
       <Footer />
-      {/* Back to Top Button */}
-      {/* <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-4 right-4 bg-red-600 text-white rounded-full p-3 shadow-lg hover:bg-red-700 transition"
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 10l7-7m0 0l7 7m-7-7v18"
-          />
-        </svg>
-      </button> */}
     </div>
   );
 };

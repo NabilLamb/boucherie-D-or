@@ -28,7 +28,7 @@ const AddAddress = () => {
                 const token = await getToken();
                 const formattedValues = {
                     ...values,
-                    phone: values.phone.replace(/\s/g, '') // Remove spaces before sending
+                    phone: values.phone.replace(/\s/g, '')
                 };
 
                 const { data } = await axios.post('/api/user/add-address', 
