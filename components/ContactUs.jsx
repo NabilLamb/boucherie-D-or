@@ -34,14 +34,14 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contactUs" className="relative bg-white">
+    <section id="contactUs" className="relative bg-white mt-10">
       {/* Title Section */}
-      <div className="text-center py-16 space-y-4">
-        <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
-          Contact Us
-        </h2>
-        <div className="w-32 h-1.5 bg-orange-600 rounded-full mx-auto animate-fade-in" />
-      </div>
+      <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            Contact Us
+          </h2>
+          <div className="w-32 h-1.5 bg-amber-600 mx-auto rounded-full" />
+        </div>
       {/* Hero Header */}
       <div className="relative h-96 bg-gray-900">
         <Image

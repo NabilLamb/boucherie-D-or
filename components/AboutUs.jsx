@@ -5,12 +5,12 @@ const AboutUs = () => {
   return (
     <div id="aboutUs" className="min-h-screen bg-gray-50">
       {/* Title Section */}
-      <div className="text-center py-16 space-y-4">
-        <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
-          About Us
-        </h2>
-        <div className="w-32 h-1.5 bg-orange-600 rounded-full mx-auto animate-fade-in" />
-      </div>
+      <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            About Us
+          </h2>
+          <div className="w-32 h-1.5 bg-amber-600 mx-auto rounded-full" />
+        </div>
 
       {/* Hero Section */}
       <section className="relative h-[500px] bg-gray-900 text-white">
@@ -39,12 +39,12 @@ const AboutUs = () => {
       <section className="px-6 py-16 md:px-8 lg:px-16">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 md:grid-cols-2 items-center">
-            <div className="relative h-[500px] overflow-hidden rounded-2xl shadow-2xl group">
+            <div className="relative h-[400px] overflow-hidden rounded-2xl shadow-2xl group">
               <Image
                 src={assets.FamilyButchers}
                 alt="Boucherie D'or Team"
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="object-cover transition-transform duration-500 group-hover:scale-100"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             </div>

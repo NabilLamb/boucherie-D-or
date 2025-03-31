@@ -11,7 +11,7 @@ const Banner = () => {
     const fetchBannerProducts = async () => {
       try {
         const { data } = await axios.get("/api/products?categoryType=banner");
-        setBannerProducts(data.products.slice(0, 2)); // Get first 2 banner products
+        setBannerProducts(data.products);
       } catch (error) {
         console.error("Error fetching banner products:", error);
       }

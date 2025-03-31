@@ -120,7 +120,7 @@ const Navbar = () => {
   const isActive = (sectionId) => mounted && activeSection === sectionId;
 
   return (
-    <nav className="fixed w-full top-0 bg-white/95 backdrop-blur-sm border-b border-red-100 shadow-lg z-50 py-3 px-4 sm:px-6 lg:px-8">
+    <nav className="fixed w-full top-0 bg-white/95 backdrop-blur-sm border-b border-red-100 shadow-lg z-[60] py-3 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo */}
         <Link
@@ -264,7 +264,6 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-
       {/* Mobile Dropdown Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-red-50 shadow-xl">
@@ -319,6 +318,22 @@ const Navbar = () => {
 
             {/* Icons and Account Section */}
             <div className="flex flex-col gap-3 border-t pt-4">
+              {iconLinks.map(({ path, name, icon, notification }) => (
+                <Link
+                  key={path}
+                  href={path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="relative flex items-center gap-3 py-2 px-4 text-gray-800 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  {notification > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-800 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                      {notification}
+                    </span>
+                  )}
+                  {icon}
+                  <span>{name}</span>
+                </Link>
+              ))}
               {isSeller && (
                 <button
                   onClick={() => {
@@ -343,23 +358,6 @@ const Navbar = () => {
                   Seller Dashboard
                 </button>
               )}
-
-              {iconLinks.map(({ path, name, icon, notification }) => (
-                <Link
-                  key={path}
-                  href={path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="relative flex items-center gap-3 py-2 px-4 text-gray-800 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  {notification > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-800 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
-                      {notification}
-                    </span>
-                  )}
-                  {icon}
-                  <span>{name}</span>
-                </Link>
-              ))}
             </div>
           </div>
         </div>

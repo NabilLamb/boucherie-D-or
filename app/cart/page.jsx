@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
 import { getImageSource } from "@/utils/images";
 import { TruckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
 
 const Cart = () => {
   const { cartItems, updateCartQuantity, products, fetchProducts } =
