@@ -33,10 +33,11 @@ const Footer = () => {
 
     return false;
   }
+
   return (
     <footer className="bg-gray-900 text-gray-100 pt-12 mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 pb-12">
           {/* Brand Column */}
           <div className="space-y-4">
             <Image
@@ -99,7 +100,9 @@ const Footer = () => {
               <p>Phone: {process.env.NEXT_PUBLIC_COMPANY_PHONE}</p>
               <p>Email: {process.env.NEXT_PUBLIC_COMPANY_EMAIL}</p>
               <Link
-                href="/#map"
+                href="https://www.google.com/maps/place/Boucherie+D'or/@44.1607055,4.8581676,595m/data=!3m2!1e3!4b1!4m6!3m5!1s0x12b599ffd3ed3369:0x4a976d91d4b4323c!8m2!3d44.1607017!4d4.8607425!16s%2Fg%2F11ghpp6xkv?entry=ttu&g_ep=EgoyMDI1MDMyNS4xIKXMDSoASAFQAw%3D%3D"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-block mt-4 text-orange-500 hover:text-orange-400 transition-colors"
               >
                 Get Directions →
@@ -107,12 +110,12 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Opening Hours */}
-          <div className="space-y-4 bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-            <h3 className="text-xl font-bold text-gray-100 flex items-center gap-2">
+          {/* Opening Hours - Wider Column */}
+          <div className="md:col-span-2 space-y-4 bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+            <h3 className="text-2xl font-bold text-gray-100 flex items-center gap-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-red-500"
+                className="h-6 w-6 text-red-500"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -125,9 +128,9 @@ const Footer = () => {
               Opening Hours
             </h3>
 
-            <div className="space-y-3">
-              {/* Current status - moved to top */}
-              <div className="pb-2">
+            <div className="space-y-4 text-base md:text-lg">
+              {/* Current status */}
+              <div className="pb-3 text-lg">
                 {isOpenNow() ? (
                   <div className="flex items-center gap-2 text-green-400">
                     <svg
@@ -165,7 +168,7 @@ const Footer = () => {
 
               {/* Monday */}
               <div
-                className={`flex justify-between py-2 px-3 rounded-lg ${
+                className={`flex justify-between py-3 px-4 rounded-xl ${
                   new Date().getDay() === 1 ? "bg-red-50" : ""
                 }`}
               >
@@ -179,9 +182,9 @@ const Footer = () => {
                 <span className="text-gray-500">Closed</span>
               </div>
 
-              {/* Tuesday - Friday (grouped) */}
+              {/* Tuesday - Friday */}
               <div
-                className={`flex justify-between py-2 px-3 rounded-lg ${
+                className={`flex justify-between py-3 px-4 rounded-xl ${
                   [2, 3, 4, 5].includes(new Date().getDay()) ? "bg-red-50" : ""
                 }`}
               >
@@ -203,7 +206,7 @@ const Footer = () => {
 
               {/* Saturday */}
               <div
-                className={`flex justify-between py-2 px-3 rounded-lg ${
+                className={`flex justify-between py-3 px-4 rounded-xl ${
                   new Date().getDay() === 6 ? "bg-red-50" : ""
                 }`}
               >
@@ -219,7 +222,7 @@ const Footer = () => {
 
               {/* Sunday */}
               <div
-                className={`flex justify-between py-2 px-3 rounded-lg ${
+                className={`flex justify-between py-3 px-4 rounded-xl ${
                   new Date().getDay() === 0 ? "bg-red-50" : ""
                 }`}
               >

@@ -14,21 +14,17 @@ const ContactSection = () => {
     formState: { errors, isSubmitting },
     reset,
   } = useForm();
-  
 
   const onSubmit = async (data) => {
     try {
       const response = await axios.post("/api/email/send", data);
-
       if (response.data.success) {
         setSuccessMessage("Message sent successfully!");
         setErrorMessage("");
         reset();
       }
     } catch (error) {
-      setErrorMessage(
-        error.response?.data?.error || "Failed to send message"
-      );
+      setErrorMessage(error.response?.data?.error || "Failed to send message");
       setSuccessMessage("");
     }
   };
@@ -37,26 +33,28 @@ const ContactSection = () => {
     <section id="contactUs" className="relative bg-white mt-10">
       {/* Title Section */}
       <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Contact Us
-          </h2>
-          <div className="w-32 h-1.5 bg-amber-600 mx-auto rounded-full" />
-        </div>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Contact Us
+        </h2>
+        <div className="w-32 h-1.5 bg-amber-600 mx-auto rounded-full mt-4" />
+      </div>
+
       {/* Hero Header */}
-      <div className="relative h-96 bg-gray-900">
+      <div className="relative h-64 sm:h-96 bg-gray-900">
         <Image
           src={assets.ContactHero}
           alt="Contact us background"
           fill
           className="object-cover opacity-90"
           priority
+          sizes="(max-width: 768px) 100vw, 80vw"
         />
         <div className="relative z-10 flex h-full items-center justify-center bg-black/50">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white md:text-5xl drop-shadow-2xl">
+          <div className="text-center px-4">
+            <h1 className="text-3xl font-bold text-white sm:text-4xl md:text-5xl drop-shadow-2xl">
               Let's Connect
             </h1>
-            <p className="mt-4 text-xl text-gray-200 md:text-2xl">
+            <p className="mt-3 text-lg text-gray-200 sm:text-xl md:text-2xl">
               We're ready to serve you better
             </p>
           </div>
@@ -64,171 +62,148 @@ const ContactSection = () => {
       </div>
 
       {/* Contact Content */}
-      <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8">
-        <div className="grid gap-16 lg:grid-cols-2 lg:gap-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Contact Form */}
-          <div className="lg:py-8">
-            <div className="relative rounded-2xl bg-gray-50 px-6 py-12 shadow-2xl sm:px-12">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+          <div className="lg:pr-8 xl:pr-12">
+            <div className="relative rounded-2xl bg-gray-50 p-6 sm:p-8 shadow-lg">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Send Your Message
               </h2>
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="mt-10 space-y-8"
+                className="mt-8 space-y-6"
                 noValidate
               >
-                <div className="space-y-10">
+                <div className="space-y-6">
+                  {/* Name Input */}
                   <div className="relative">
-                    <input
-                      {...register("name", { required: "Name is required" })}
-                      type="text"
-                      id="name"
-                      autoComplete="name"
-                      className="peer block w-full rounded-lg border-0 bg-white py-4 pl-12 pr-4 text-gray-900 shadow-sm ring-1 ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-red-600"
-                      placeholder=" "
-                    />
-                    <label
-                      htmlFor="name"
-                      className="pointer-events-none absolute left-12 top-3 origin-[0] -translate-y-8 scale-90 transform text-sm text-gray-500 transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-8 peer-focus:scale-90"
-                    >
-                      Full Name
-                    </label>
-                    <span className="absolute left-4 top-4 text-gray-400">
-                      <svg
-                        className="h-6 w-6"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 4a4 4 0 014 4 4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 014-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z" />
-                      </svg>
-                    </span>
+                    <div className="flex items-center border-b-2 border-gray-200 focus-within:border-red-700">
+                      <span className="text-gray-400 ml-3">
+                        <svg
+                          className="h-6 w-6"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 4a4 4 0 014 4 4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 014-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z" />
+                        </svg>
+                      </span>
+                      <input
+                        {...register("name", { required: "Name is required" })}
+                        type="text"
+                        id="name"
+                        className="block w-full py-3 px-4 bg-transparent outline-none placeholder-gray-400"
+                        placeholder="Full Name"
+                      />
+                    </div>
                     {errors.name && (
-                      <p className="mt-2 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600">
                         {errors.name.message}
                       </p>
                     )}
                   </div>
 
+                  {/* Email Input */}
                   <div className="relative">
-                    <input
-                      {...register("email", {
-                        required: "Email is required",
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: "Invalid email address",
-                        },
-                      })}
-                      type="email"
-                      id="email"
-                      autoComplete="email"
-                      className="peer block w-full rounded-lg border-0 bg-white py-4 pl-12 pr-4 text-gray-900 shadow-sm ring-1 ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-red-600"
-                      placeholder=" "
-                    />
-                    <label
-                      htmlFor="email"
-                      className="pointer-events-none absolute left-12 top-3 origin-[0] -translate-y-8 scale-90 transform text-sm text-gray-500 transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-8 peer-focus:scale-90"
-                    >
-                      Email Address
-                    </label>
-                    <span className="absolute left-4 top-4 text-gray-400">
-                      <svg
-                        className="h-6 w-6"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z" />
-                      </svg>
-                    </span>
+                    <div className="flex items-center border-b-2 border-gray-200 focus-within:border-red-700">
+                      <span className="text-gray-400 ml-3">
+                        <svg
+                          className="h-6 w-6"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z" />
+                        </svg>
+                      </span>
+                      <input
+                        {...register("email", {
+                          required: "Email is required",
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Invalid email address",
+                          },
+                        })}
+                        type="email"
+                        id="email"
+                        className="block w-full py-3 px-4 bg-transparent outline-none placeholder-gray-400"
+                        placeholder="Email Address"
+                      />
+                    </div>
                     {errors.email && (
-                      <p className="mt-2 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600">
                         {errors.email.message}
                       </p>
                     )}
                   </div>
 
+                  {/* Message Textarea */}
                   <div className="relative">
-                    <textarea
-                      {...register("message", {
-                        required: "Message is required",
-                      })}
-                      id="message"
-                      rows={8}
-                      className="peer block w-full rounded-lg border-0 bg-white py-4 pl-12 pr-4 text-gray-900 shadow-sm ring-1 ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-red-600"
-                      placeholder=" "
-                    />
-                    <label
-                      htmlFor="message"
-                      className="pointer-events-none absolute left-12 top-3 origin-[0] -translate-y-8 scale-90 transform text-sm text-gray-500 transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-8 peer-focus:scale-90"
-                    >
-                      Your Message
-                    </label>
-                    <span className="absolute left-4 top-4 text-gray-400">
-                      <svg
-                        className="h-6 w-6"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
-                      </svg>
-                    </span>
+                    <div className="flex items-start border-b-2 border-gray-200 focus-within:border-red-700">
+                      <span className="text-gray-400 mt-3 ml-3">
+                        <svg
+                          className="h-6 w-6"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
+                        </svg>
+                      </span>
+                      <textarea
+                        {...register("message", {
+                          required: "Message is required",
+                        })}
+                        id="message"
+                        rows={4}
+                        className="block w-full py-3 px-4 bg-transparent outline-none placeholder-gray-400 resize-none"
+                        placeholder="Your Message"
+                      />
+                    </div>
                     {errors.message && (
-                      <p className="mt-2 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600">
                         {errors.message.message}
                       </p>
                     )}
                   </div>
                 </div>
 
+                {/* Status Messages */}
                 {successMessage && (
-                  <div className="p-3 mb-4 text-green-800 bg-green-50 rounded-lg">
+                  <div className="p-3 text-green-800 bg-green-50 rounded-lg border border-green-200">
                     {successMessage}
                   </div>
                 )}
-
                 {errorMessage && (
-                  <div className="p-3 mb-4 text-red-800 bg-red-50 rounded-lg">
+                  <div className="p-3 text-red-800 bg-red-50 rounded-lg border border-red-200">
                     {errorMessage}
                   </div>
                 )}
 
+                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-700 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all hover:bg-red-800 hover:shadow-xl disabled:opacity-50"
+                  className="w-full py-3 px-6 bg-red-700 hover:bg-red-800 text-white font-semibold rounded-lg transition-colors duration-300 disabled:opacity-50"
                 >
-                  <svg
-                    className="h-6 w-6 animate-bounce"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
                   {isSubmitting ? "Sending..." : "Send Message"}
                 </button>
               </form>
             </div>
           </div>
 
-          {/* Contact Info & Map */}
-          <div className="flex flex-col justify-between lg:py-8">
-            <div className="rounded-2xl bg-gradient-to-b from-red-50 to-white p-12 shadow-2xl">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                Visit Our Store
-              </h2>
-              <div className="mt-8 space-y-8">
-                {/* Address Card */}
-                <div className="group relative overflow-hidden rounded-xl bg-white p-8 shadow-lg transition-all hover:shadow-xl">
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-100 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                  <div className="relative z-10 flex items-start space-x-6">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-700 text-white">
+          {/* Contact Info */}
+          <div className="lg:pl-8 xl:pl-12">
+            <div className="space-y-8">
+              {/* Address Card */}
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                  Visit Our Store
+                </h2>
+                
+                <div className="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0 bg-red-700 p-4 rounded-lg">
                       <svg
-                        className="h-8 w-8"
+                        className="h-6 w-6 text-white"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                       >
@@ -236,28 +211,30 @@ const ContactSection = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-gray-900">
                         Our Address
                       </h3>
-                      {process.env.NEXT_PUBLIC_COMPANY_ADDRESS?.split(",").map(
-                        (line, index) => (
-                          <p key={index} className="text-gray-600">
-                            {line.trim()}
-                          </p>
-                        )
-                      )}
+                      <div className="mt-2 text-gray-600 space-y-1">
+                        {process.env.NEXT_PUBLIC_COMPANY_ADDRESS?.split(",").map(
+                          (line, index) => (
+                            <p key={index} className="break-words">
+                              {line.trim()}
+                            </p>
+                          )
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Contact Cards */}
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="group relative overflow-hidden rounded-xl bg-white p-8 shadow-lg transition-all hover:shadow-xl">
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-100 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                    <div className="relative z-10 space-y-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-700 text-white">
+                {/* Contact Cards Grid */}
+                <div className="grid gap-6 mt-8 sm:grid-cols-2">
+                  {/* Phone Card */}
+                  <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0 bg-red-700 p-3 rounded-lg">
                         <svg
-                          className="h-8 w-8"
+                          className="h-6 w-6 text-white"
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -265,10 +242,10 @@ const ContactSection = () => {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-gray-900">
                           Call Us
                         </h3>
-                        <p className="mt-2 text-gray-600">
+                        <p className="mt-1 text-gray-600">
                           {process.env.NEXT_PUBLIC_COMPANY_PHONE}
                         </p>
                         <p className="mt-2 text-sm text-gray-500">
@@ -278,12 +255,12 @@ const ContactSection = () => {
                     </div>
                   </div>
 
-                  <div className="group relative overflow-hidden rounded-xl bg-white p-8 shadow-lg transition-all hover:shadow-xl">
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-100 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                    <div className="relative z-10 space-y-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-700 text-white">
+                  {/* Email Card */}
+                  <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0 bg-red-700 p-3 rounded-lg">
                         <svg
-                          className="h-8 w-8"
+                          className="h-6 w-6 text-white"
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -291,10 +268,10 @@ const ContactSection = () => {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-gray-900">
                           Email Us
                         </h3>
-                        <p className="mt-2 text-gray-600 break-all whitespace-pre-wrap">
+                        <p className="mt-1 text-gray-600 break-all">
                           {process.env.NEXT_PUBLIC_COMPANY_EMAIL}
                         </p>
                         <p className="mt-2 text-sm text-gray-500">
@@ -306,16 +283,15 @@ const ContactSection = () => {
                 </div>
 
                 {/* Map */}
-                <div id="map" className="overflow-hidden rounded-xl shadow-2xl">
+                <div className="mt-8 rounded-xl overflow-hidden shadow-xl">
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d92423.55032243805!2d4.8607425!3d44.1607017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12b599ffd3ed3369%3A0x4a976d91d4b4323c!2sBoucherie%20D&#39;or!5e0!3m2!1sen!2sfr!4v1718877416915!5m2!1sen!2sfr"
                     width="100%"
                     height="300"
-                    style={{ border: 0 }}
+                    className="border-0"
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    className="rounded-xl"
                   />
                   <div className="bg-gray-50 p-4 text-center">
                     <p className="text-sm text-gray-600">

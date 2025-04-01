@@ -6,6 +6,8 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import connectDB from "@/config/db";
 import mongoose from "mongoose";
 
+
+//app\api\products\[id]\route.js
 export async function GET(request, { params }) {
   try {
     await connectDB();
@@ -46,9 +48,14 @@ export async function PUT(request, { params }) {
     const formData = await request.formData();
 
     const category = formData.get("category");
-    if (!mongoose.Types.ObjectId.isValid(category)) {
+    if (!category || !mongoose.Types.ObjectId.isValid(category)) {
       return NextResponse.json(
-        { success: false, message: "Invalid category ID" },
+        { 
+          success: false, 
+          message: "Invalid category ID format",
+          received: category,
+          expected: "Valid MongoDB ObjectId"
+        },
         { status: 400 }
       );
     }

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import axios from "axios";
-
+import { useAppContext } from "@/context/AppContext";
 const Banner = () => {
   const [bannerProducts, setBannerProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { addToCart, router } = useAppContext();
 
   useEffect(() => {
     const fetchBannerProducts = async () => {
@@ -19,10 +19,14 @@ const Banner = () => {
     fetchBannerProducts();
   }, []);
 
+  const handleAddToCart = (product) => {
+    addToCart(product._id);
+  };
+
   useEffect(() => {
     if (bannerProducts.length > 1) {
       const interval = setInterval(() => {
-        setCurrentSlide(prev => (prev + 1) % bannerProducts.length);
+        setCurrentSlide((prev) => (prev + 1) % bannerProducts.length);
       }, 5000);
       return () => clearInterval(interval);
     }
@@ -32,13 +36,18 @@ const Banner = () => {
 
   return (
     <div className="relative mx-auto my-12 max-w-7xl overflow-hidden rounded-2xl shadow-xl">
-      <div className="flex transition-transform duration-500 ease-in-out"
-           style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+      <div
+        className="flex transition-transform duration-500 ease-in-out"
+        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+      >
         {bannerProducts.map((product, index) => (
-          <div key={product._id} className="relative flex min-w-full flex-col md:flex-row">
+          <div
+            key={product._id}
+            className="relative flex min-w-full flex-col md:flex-row"
+          >
             {/* Background Gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-red-900/80 to-red-800/60" />
-            
+
             {/* Content */}
             <div className="relative z-10 flex flex-1 flex-col justify-center p-8 text-white md:p-12 lg:p-16">
               <span className="mb-2 inline-block rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
@@ -67,12 +76,17 @@ const Banner = () => {
                 )}
                 <span className="text-lg text-red-200">/{product.unit}</span>
               </div>
-              <Link
-                href={`/product/${product._id}`}
-                className="mt-8 inline-block w-fit rounded-full bg-white px-8 py-3 text-lg font-semibold text-red-600 transition-all hover:bg-opacity-90"
-              >
+
+              <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddToCart(product);
+                router.push("/cart");
+              }}
+              
+              className="mt-8 inline-block w-fit rounded-full bg-white px-8 py-3 text-lg font-semibold text-red-600 transition-all hover:bg-opacity-90">
                 Shop Now →
-              </Link>
+              </button>
             </div>
 
             {/* Images */}
@@ -100,7 +114,7 @@ const Banner = () => {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`h-2 w-8 rounded-full transition-all ${
-                index === currentSlide ? 'bg-white' : 'bg-white/50'
+                index === currentSlide ? "bg-white" : "bg-white/50"
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

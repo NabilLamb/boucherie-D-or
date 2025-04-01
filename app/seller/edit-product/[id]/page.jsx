@@ -52,7 +52,7 @@ const EditProduct = () => {
           setExistingImages(product.image || []);
           setName(product.name);
           setDescription(product.description);
-          setCategory(product.category);
+          setCategory(product.category._id);
           setPrice(product.price);
           setOfferPrice(product.offerPrice || "");
           setUnit(product.unit);
