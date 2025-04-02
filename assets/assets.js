@@ -20,34 +20,7 @@ import redirect_icon from "./redirect_icon.svg";
 import star_dull_icon from "./star_dull_icon.svg";
 import upload_area from "./upload_area.png";
 import checkmark from "./checkmark.png";
-import abdel_oven from "./abdel_oven.png"
 
-// Product Images
-import PremiumAngusBeefSteak_image from "./products_img/PremiumAngusBeefSteak_image.png";
-import PremiumAngusBeefSteak_image1 from "./products_img/PremiumAngusBeefSteak_image1.png";
-import PremiumAngusBeefSteak_image2 from "./products_img/PremiumAngusBeefSteak_image2.png";
-import PremiumAngusBeefSteak_image3 from "./products_img/PremiumAngusBeefSteak_image3.png";
-import PremiumAngusBeefSteak_image4 from "./PremiumAngusBeefSteak_image4.png";
-import lamb_chops from "./lamb_chops.png";
-import chicken_breast from "./chicken_breast.png";
-import chefs_knife from "./chefs_knife.png";
-import cutting_board from "./cutting_board.png";
-import mineral_water from "./mineral_water.png";
-import potato_chips from "./potato_chips.png";
-import organic_tomatoes from "./organic_tomatoes.png";
-import fresh_basil from "./fresh_basil.png";
-import beef_salami from "./beef_salami.png";
-import aged_gouda from "./aged_gouda.png";
-import valencia_oranges from "./valencia_oranges.png";
-import artisan_baguette from "./artisan_baguette.png";
-import grill_pan from "./grill_pan.png";
-import mixed_skewers from "./mixed_skewers.png";
-import organic_eggs from "./organic_eggs.png";
-import olive_oil from "./olive_oil.png";
-import meatsHeader from "./meatsHeader.png"
-import VegetablesFruitsHeader from "./VegetablesFruitsHeader.png"
-import KitchenToolsHeader from "./KitchenToolsHeader.png"
-import WoodOvensHeader from "./WoodOvensHeader.png"
 
 //About us import
 import ShopFront from "./aboutUs/shop-front.jpg"
@@ -62,16 +35,9 @@ import iconGoogleMaps from "./aboutUs/icon-google-maps.svg"
 //Contact us import
 import ContactHero from "./contactUs/ContactHero.jpg"
 
-//products import
-import default_img from "./products_img/default-product.png"
-import spicy_sausage from "./products_img/spicy_sausage.png"
-import cold_cuts from "./products_img/cold_cuts.jpg"
-import gourmet_deli_sandwich from "./products_img/gourmet_deli_sandwich.jpg"
-import bbq_pack from "./products_img/bbq_pack.jpeg"
-import sparkling_water from "./products_img/sparkling_water.jpg"
-import fresh_apples from "./products_img/fresh_apples.jpg"
-import organic_carrots from "./products_img/organic_carrots.png"
-import electric_oven from "./products_img/electric_oven.png"
+
+// Product default image
+import default_img from "./default_img.png";
 
 
 
@@ -98,7 +64,7 @@ export const assets = {
   star_dull_icon,
   upload_area,
   checkmark,
-  abdel_oven,
+
 
   //About us
   ShopFront,
@@ -113,45 +79,9 @@ export const assets = {
   //Contact us
   ContactHero,
 
-  //Header Images
-  meatsHeader,
-  VegetablesFruitsHeader,
-  KitchenToolsHeader,
-  WoodOvensHeader,
 
-  // Product Images
-  PremiumAngusBeefSteak_image,
-  PremiumAngusBeefSteak_image1,
-  PremiumAngusBeefSteak_image2,
-  PremiumAngusBeefSteak_image3,
-  PremiumAngusBeefSteak_image4,
-  lamb_chops,
-  chicken_breast,
-  chefs_knife,
-  cutting_board,
-  mineral_water,
-  potato_chips,
-  organic_tomatoes,
-  fresh_basil,
-  beef_salami,
-  aged_gouda,
-  valencia_oranges,
-  artisan_baguette,
-  grill_pan,
-  mixed_skewers,
-  organic_eggs,
-  olive_oil,
-
+  // Product default image
   default_img,
-  spicy_sausage,
-  cold_cuts,
-  gourmet_deli_sandwich,
-  bbq_pack,
-  sparkling_water,
-  fresh_apples,
-  organic_carrots,
-  electric_oven,
-
 };
 
 export const CartIcon = ({ className = "w-6 h-6" }) => {
@@ -298,345 +228,11 @@ export const searchIcon = () => (
 
 
 
-export const productsDummyData = [
-  {
-    "_id": "1",
-    "userId": "butcher_shop",
-    "name": "Premium Angus Beef Steak",
-    "description": "Prime cut aged beef, perfect for grilling",
-    "price": 24.99,
-    "offerPrice": 22.99,
-    "image": [
-      "PremiumAngusBeefSteak_image",
-      "PremiumAngusBeefSteak_image1",
-      "PremiumAngusBeefSteak_image2",
-      "PremiumAngusBeefSteak_image3",
-      "PremiumAngusBeefSteak_image4"
-    ],
-    "category": "BEEF",
-    "unit": "kg",
-    "date": 1738667236865,
-    "__v": 0
-  },
-  {
-    "_id": "2",
-    "userId": "butcher_shop",
-    "name": "New Zealand Lamb Chops",
-    "description": "Fresh frenched lamb chops",
-    "price": 18.5,
-    "image": ["lamb_chops"],
-    "category": "LAMB",
-    "unit": "kg",
-    "date": 1738667310300,
-    "__v": 0
-  },
-  {
-    "_id": "3",
-    "userId": "butcher_shop",
-    "name": "Organic Chicken Breast",
-    "description": "Skinless, boneless, antibiotic-free",
-    "price": 9.99,
-    "image": ["chicken_breast"],
-    "category": "POULTRY",
-    "unit": "kg",
-    "date": 1738667366224,
-    "__v": 0
-  },
-  {
-    "_id": "4",
-    "userId": "butcher_shop",
-    "name": "Spicy Italian Sausage",
-    "description": "Traditional Italian sausage with a spicy kick",
-    "price": 12.99,
-    "image": ["spicy_sausage"],
-    "category": "SAUSAGE",
-    "unit": "kg",
-    "date": 1738667503075,
-    "__v": 0
-  },
-  {
-    "_id": "5",
-    "userId": "butcher_shop",
-    "name": "Assorted Cold Cuts Platter",
-    "description": "A selection of fine cold cuts perfect for sharing",
-    "price": 29.99,
-    "image": ["cold_cuts"],
-    "category": "COLD CUTS",
-    "unit": "pack",
-    "date": 1738667788883,
-    "__v": 0
-  },
-  {
-    "_id": "6",//
-    "userId": "butcher_shop",
-    "name": "Gourmet Deli Sandwich",
-    "description": "A classic deli sandwich with premium ingredients",
-    "price": 8.99,
-    "image": ["gourmet_deli_sandwich"],
-    "category": "DELI",
-    "unit": "piece",
-    "date": 1738667977644,
-    "__v": 0
-  },
-  {
-    "_id": "7",
-    "userId": "butcher_shop",
-    "name": "BBQ Pack for 4",
-    "description": "A complete BBQ package for a family gathering",
-    "price": 49.99,
-    "image": ["bbq_pack"],
-    "category": "BBQ PACK",
-    "unit": "pack",
-    "date": 1738668086331,
-    "__v": 0
-  },
-  {
-    "_id": "8",
-    "userId": "butcher_shop",
-    "name": "Sparkling Water",
-    "description": "Refreshing and crisp sparkling water",
-    "price": 1.99,
-    "image": ["sparkling_water"],
-    "category": "DRINKS",
-    "unit": "bottle",
-    "date": 1738668200000,
-    "__v": 0
-  },
-  {
-    "_id": "9",
-    "userId": "butcher_shop",
-    "name": "Fresh Apples",
-    "description": "Crisp and juicy apples from local orchards",
-    "price": 3.99,
-    "image": ["fresh_apples"],
-    "category": "FRUITS",
-    "unit": "kg",
-    "date": 1738668300000,
-    "__v": 0
-  },
-  {
-    "_id": "10", //
-    "userId": "butcher_shop",
-    "name": "Organic Carrots",
-    "description": "Freshly harvested organic carrots",
-    "price": 2.99,
-    "image": ["organic_carrots"],
-    "category": "VEGETABLES",
-    "unit": "kg",
-    "date": 1738668400000,
-    "__v": 0
-  },
-  {
-    "_id": "11",//
-    "userId": "butcher_shop",
-    "name": "Electric Oven 220V",
-    "description": "High performance electric oven suitable for any kitchen",
-    "price": 199.99,
-    "image": ["electric_oven"],
-    "category": "OVENS",
-    "unit": "unit",
-    "date": 1738668500000,
-    "__v": 0
-  },
-  {
-    "_id": "12",
-    "userId": "butcher_shop",
-    "name": "Professional Chef's Knife",
-    "description": "High-carbon steel kitchen knife",
-    "price": 89.99,
-    "image": ["chefs_knife"],
-    "category": "KITCHENE TOOLS",
-    "unit": "piece",
-    "date": 1738668600000,
-    "__v": 0
-  },
-  // --- Additional Products ---
-  // BEEF additional products (IDs 13-16)
-  {
-    "_id": "13",
-    "name": "Wagyu Ribeye Steak",
-    "description": "Japanese A5 wagyu with perfect marbling texture",
-    "price": 89.99,
-    "offerPrice": 79.99,
-    "image": [],
-    "category": "BEEF",
-    "unit": "kg"
-  },
-  {
-    "_id": "14",
-    "name": "Dry-Aged Tomahawk",
-    "description": "45-day dry-aged tomahawk steak with bone-in",
-    "price": 65.00,
-    "offerPrice": 55.00,
-    "image": [],
-    "category": "BEEF",
-    "unit": "kg"
-  },
-
-  // LAMB (15-16)
-  {
-    "_id": "15",
-    "name": "Herb-Crusted Rack of Lamb",
-    "description": "French-trimmed rack with rosemary & garlic crust",
-    "price": 42.99,
-    "offerPrice": 37.99,
-    "image": [],
-    "category": "LAMB",
-    "unit": "kg"
-  },
-  {
-    "_id": "16",
-    "name": "Lamb Kofta Skewers",
-    "description": "Pre-marinated Middle Eastern-style lamb skewers",
-    "price": 19.99,
-    "image": [],
-    "category": "LAMB",
-    "unit": "kg"
-  },
-
-  // POULTRY (17-18)
-  {
-    "_id": "17",
-    "name": "Free-Range Turkey Drumsticks",
-    "description": "Jumbo drumsticks brined for 24 hours",
-    "price": 8.99,
-    "offerPrice": 7.49,
-    "image": [],
-    "category": "POULTRY",
-    "unit": "kg"
-  },
-  {
-    "_id": "18",
-    "name": "Duck Breast Magret",
-    "description": "French-style duck breast with crispy skin",
-    "price": 22.50,
-    "image": [],
-    "category": "POULTRY",
-    "unit": "kg"
-  },
-
-  // SAUSAGE (19-20)
-  {
-    "_id": "19",
-    "name": "Chorizo Picante",
-    "description": "Spanish smoked paprika sausage with chili",
-    "price": 14.99,
-    "offerPrice": 12.99,
-    "image": [],
-    "category": "SAUSAGE",
-    "unit": "kg"
-  },
-  {
-    "_id": "20",
-    "name": "Boudin Noir",
-    "description": "Traditional French blood sausage with apples",
-    "price": 18.75,
-    "image": [],
-    "category": "SAUSAGE",
-    "unit": "kg"
-  },
-
-  // COLD CUTS (21-22)
-  {
-    "_id": "21",
-    "name": "San Daniele Ham",
-    "description": "Aged 18-month Italian prosciutto",
-    "price": 45.00,
-    "offerPrice": 39.99,
-    "image": [],
-    "category": "COLD CUTS",
-    "unit": "pack"
-  },
-  {
-    "_id": "22",
-    "name": "Saucisson Sec",
-    "description": "French dry-cured sausage with black pepper",
-    "price": 28.50,
-    "image": [],
-    "category": "COLD CUTS",
-    "unit": "pack"
-  },
-
-  // DRINKS (23)
-  {
-    "_id": "23",
-    "name": "Craft Ginger Beer",
-    "description": "Small-batch fermented ginger beer",
-    "price": 3.99,
-    "offerPrice": 2.99,
-    "image": [],
-    "category": "DRINKS",
-    "unit": "bottle"
-  },
-
-  // FRUITS (24)
-  {
-    "_id": "24",
-    "name": "Organic Blood Oranges",
-    "description": "Sicilian blood oranges with deep red flesh",
-    "price": 6.99,
-    "image": [],
-    "category": "FRUITS",
-    "unit": "kg"
-  },
-
-  // KITCHENE TOOLS (25)
-  {
-    "_id": "25",
-    "name": "Japanese Nakiri Knife",
-    "description": "VG-10 steel vegetable cleaver",
-    "price": 129.99,
-    "offerPrice": 109.99,
-    "image": [],
-    "category": "KITCHENE TOOLS",
-    "unit": "piece"
-  }
-];
 
 
 
-export const userDummyData = {
-  "_id": "user_butcher_shop",
-  "name": "Halal Butcher",
-  "email": "contact@halalbutcher.com",
-  "imageUrl": assets.user_icon,
-  "cartItems": {},
-  "__v": 0
-};
 
-export const orderDummyData = [
-  {
-    "_id": "order1",
-    "userId": "user_butcher_shop",
-    "items": [
-      {
-        "product": productsDummyData[0],
-        "quantity": 2
-      }
-    ],
-    "amount": 45.98,
-    "address": {
-      "_id": "address1",
-      "fullName": "John Doe",
-      "phoneNumber": "0123456789",
-      "pincode": "12345",
-      "area": "Main Street 123",
-      "city": "London",
-      "state": "England"
-    },
-    "status": "Delivered"
-  }
-];
 
-export const addressDummyData = [
-  {
-    "_id": "address1",
-    "userId": "user_butcher_shop",
-    "fullName": "John Doe",
-    "phoneNumber": "0123456789",
-    "pincode": "12345",
-    "area": "Main Street 123",
-    "city": "London",
-    "state": "England"
-  }
-];
+
+
+
