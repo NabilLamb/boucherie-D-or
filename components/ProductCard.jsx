@@ -71,7 +71,6 @@ const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product._id);
-    toast.success(`${product.name} added to cart`);
   };
 
   return (

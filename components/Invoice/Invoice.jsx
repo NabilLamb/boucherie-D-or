@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   PDFViewer,
   Document,
@@ -22,14 +22,14 @@ const COMPANY_INFO = {
   phone: process.env.NEXT_PUBLIC_COMPANY_PHONE || "+33 4 90 62 49 06",
   email: process.env.NEXT_PUBLIC_COMPANY_EMAIL || "contact@boucheriedor.com",
 };
+
 const getAbsoluteUrl = (path) => {
-  if (typeof window === "undefined") return ""; // Server-side fallback
+  if (typeof window === "undefined") return "";
   return `${window.location.origin}${path}`;
 };
 
-const currency = process.env.NEXT_PUBLIC_CURRENCY;
+const currency = process.env.NEXT_PUBLIC_CURRENCY || "€";
 
-// Register font if needed
 Font.register({
   family: "Inter",
   fonts: [
@@ -94,29 +94,39 @@ const styles = StyleSheet.create({
   },
 });
 
-const InvoicePDF = ({ order, companyInfo }) => {
+const InvoicePDF = ({ order = {}, companyInfo = COMPANY_INFO }) => {
+  const safeOrder = {
+    ...order,
+    _id: order._id || 'N/A',
+    date: order.date || Date.now(),
+    amount: order.amount || 0,
+    items: order.items || [],
+    address: order.address || {
+      fullName: 'Customer Name Not Available',
+      address: 'Address Not Available',
+      city: '',
+      postalCode: '',
+      phone: ''
+    }
+  };
+
   const logoUrl = getAbsoluteUrl(companyInfo.logo);
+  
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header Section */}
         <View style={styles.header}>
-          {/* <View>
-            <Image src={logoUrl} style={styles.logo} />
-          </View> */}
-
           <View>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>Invoice</Text>
             <Text style={{ fontSize: 10 }}>
-              Date: {new Date(order.date).toLocaleDateString("fr-FR")}
+              Date: {new Date(safeOrder.date).toLocaleDateString("fr-FR")}
             </Text>
             <Text style={{ fontSize: 10 }}>
-              Invoice #: {order._id.toString().slice(-6).toUpperCase()}
+              Invoice #: {safeOrder._id.toString().slice(-6).toUpperCase()}
             </Text>
           </View>
         </View>
 
-        {/* Company/Customer Info */}
         <View style={styles.section}>
           <View style={{ width: "45%" }}>
             <Text style={{ fontWeight: "bold" }}>{companyInfo.name}</Text>
@@ -127,70 +137,58 @@ const InvoicePDF = ({ order, companyInfo }) => {
 
           <View style={{ width: "45%" }}>
             <Text style={{ fontWeight: "bold" }}>Billed To</Text>
-            <Text>{order.address.fullName}</Text>
-            <Text>{order.address.address}</Text>
+            <Text>{safeOrder.address.fullName}</Text>
+            <Text>{safeOrder.address.address}</Text>
             <Text>
-              {order.address.city}, {order.address.postalCode}
+              {safeOrder.address.city}, {safeOrder.address.postalCode}
             </Text>
-            <Text>{order.address.phone}</Text>
+            <Text>{safeOrder.address.phone}</Text>
           </View>
         </View>
 
-        {/* Items Table */}
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Item</Text>
             <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Price</Text>
-            <Text style={[styles.tableCol, { fontWeight: "bold" }]}>
-              Quantity
-            </Text>
+            <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Quantity</Text>
             <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Total</Text>
           </View>
 
-          {order.items.map((item, index) => {
-            const price =
-              item.productSnapshot?.offerPrice ||
-              item.productSnapshot?.price ||
-              0;
+          {safeOrder.items.map((item, index) => {
+            const snapshot = item.productSnapshot || {};
+            const price = snapshot.offerPrice || snapshot.price || 0;
+            const quantity = item.quantity || 0;
+            
             return (
               <View key={`item-${index}`} style={styles.tableRow}>
                 <Text style={styles.tableCol}>
-                  {item.productSnapshot?.name || "Product Name"}
-                  {"\n"}
-                  {/* <Text style={{ color: "#666" }}>
-                    {item.productSnapshot?.category?.name || "Uncategorized"}
-                  </Text> */}
+                  {snapshot.name || "Product Name"}
                 </Text>
                 <Text style={styles.tableCol}>
                   {currency}
                   {price.toFixed(2)}
                 </Text>
                 <Text style={styles.tableCol}>
-                  {item.quantity} {item.productSnapshot?.unit}
+                  {quantity} {snapshot.unit || "unit"}
                 </Text>
                 <Text style={styles.tableCol}>
                   {currency}
-                  {(price * item.quantity).toFixed(2)}
+                  {(price * quantity).toFixed(2)}
                 </Text>
               </View>
             );
           })}
         </View>
 
-        {/* Totals */}
         <View style={styles.totalContainer}>
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <Text>Subtotal:</Text>
             <Text>
               {currency}
-              {order.amount.toFixed(2)}
+              {safeOrder.amount.toFixed(2)}
             </Text>
           </View>
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <Text>Shipping:</Text>
             <Text>{currency}0.00</Text>
           </View>
@@ -208,12 +206,11 @@ const InvoicePDF = ({ order, companyInfo }) => {
             <Text style={{ fontWeight: "bold" }}>Grand Total:</Text>
             <Text style={{ fontWeight: "bold" }}>
               {currency}
-              {order.amount.toFixed(2)}
+              {safeOrder.amount.toFixed(2)}
             </Text>
           </View>
         </View>
 
-        {/* Footer */}
         <View
           style={{
             borderTopWidth: 1,
@@ -236,37 +233,61 @@ const InvoicePDF = ({ order, companyInfo }) => {
 };
 
 const Invoice = ({ order }) => {
+  const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const handleDownload = async () => {
-    const { saveAs } = await import("file-saver");
-    const instance = pdf(
-      <InvoicePDF order={order} companyInfo={COMPANY_INFO} />
-    );
-    const blob = await instance.toBlob();
-    saveAs(blob, `invoice-${order._id.toString().slice(-6)}.pdf`);
+    if (!order) return;
+    
+    setIsLoading(true);
+    try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const { saveAs } = await import('file-saver');
+      
+      const instance = pdf(
+        <InvoicePDF order={order} companyInfo={COMPANY_INFO} />
+      );
+      
+      const blob = await instance.toBlob();
+      saveAs(blob, `invoice-${order._id?.toString().slice(-6) || 'unknown'}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (!order) {
+    return (
+      <div className="text-center text-gray-500 p-8">
+        No order data available
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
-      {order ? (
-        <>
-          <div className="mb-4 print:hidden" style={{ height: "600px" }}>
-            <PDFViewer width="100%" height="100%">
-              <InvoicePDF order={order} companyInfo={COMPANY_INFO} />
-            </PDFViewer>
-          </div>
-
-          <button
-            onClick={handleDownload}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Download PDF
-          </button>
-        </>
-      ) : (
-        <div className="text-center text-gray-500 p-8">
-          Loading invoice data...
+      {isMounted && (
+        <div className="mb-4 print:hidden" style={{ height: "600px" }}>
+          <PDFViewer width="100%" height="100%">
+            <InvoicePDF order={order} companyInfo={COMPANY_INFO} />
+          </PDFViewer>
         </div>
       )}
+
+      <button
+        onClick={handleDownload}
+        disabled={isLoading}
+        className={`bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors ${
+          isLoading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+      >
+        {isLoading ? 'Generating PDF...' : 'Download PDF'}
+      </button>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import axios from "axios";
@@ -9,6 +9,7 @@ import ProductCard from "@/components/ProductCard";
 import { StarIcon, WeightIcon, AgeIcon, CutIcon, TypeIcon } from "@/components/Icons";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+
 const ProductPage = () => {
   const { id } = useParams();
   const { currency, addToCart, router } = useAppContext();
@@ -18,22 +19,45 @@ const ProductPage = () => {
   const [mainImage, setMainImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
+  // Carousel state for Related Products
+  const carouselRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (carouselRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth);
+    }
+  };
+
+  const handleCarousel = (direction) => {
+    if (!carouselRef.current) return;
+    const scrollAmount = carouselRef.current.clientWidth * 0.8;
+    carouselRef.current.scrollBy({
+      left: direction === "prev" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Fetch main product
+        // Fetch main product details
         const { data: productData } = await axios.get(`/api/products/${id}`);
         if (!productData.success) throw new Error(productData.message);
         console.log(productData);
-        // Fetch related products
-        const { data: relatedData } = await axios.get(
-          `/api/products?category=${productData.product.category._id}&limit=4`
-        );
 
+        // Fetch related products using the new API logic:
+        // It fetches same-category products first (excluding the current product) 
+        // and fills the remainder with other products.
+        const { data: relatedData } = await axios.get(
+          `/api/products?category=${productData.product.category._id}&exclude=${id}&limit=1000`
+        );
         setProduct(productData.product);
-        setRelatedProducts(relatedData.products);
+        setRelatedProducts(relatedData.products.filter((p) => p._id !== id));
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load product");
       } finally {
@@ -44,15 +68,26 @@ const ProductPage = () => {
     fetchData();
   }, [id]);
 
+  // Add scroll event listener for carousel controls
+  useEffect(() => {
+    if (carouselRef.current) {
+      carouselRef.current.addEventListener("scroll", checkScroll);
+      checkScroll();
+    }
+    return () => {
+      if (carouselRef.current)
+        carouselRef.current.removeEventListener("scroll", checkScroll);
+    };
+  }, [relatedProducts]);
+
   if (loading) return <Loading />;
   if (error) return <div className="error-message">{error}</div>;
   if (!product) return <div className="error-message">Product not found</div>;
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Navbar */}
       <Navbar />
-      {/* Product Main Section */}
+      {/* Main Product Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Image Gallery */}
@@ -66,12 +101,11 @@ const ProductPage = () => {
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
-              {/* Fresh Cut Badge */}
+              {/* Fresh Product Badge */}
               <div className="absolute top-4 left-4 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                Fresh Cut
+                Fresh Product
               </div>
             </div>
-
             <div className="grid grid-cols-4 gap-3">
               {product.image.map((img, index) => (
                 <button
@@ -96,18 +130,15 @@ const ProductPage = () => {
 
           {/* Product Details */}
           <div className="space-y-8">
-            {/* Header */}
             <div className="border-b pb-6">
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
                 {product.name}
               </h1>
               <div className="mt-2 flex items-center gap-2 text-yellow-600">
                 <StarIcon className="w-5 h-5" />
-                <span className="font-medium">Premium Quality Cut</span>
+                <span className="font-medium">Premium Quality Product</span>
               </div>
             </div>
-
-            {/* Pricing Section */}
             <div className="space-y-4">
               <div className="flex items-baseline gap-4">
                 <span className="text-4xl font-bold text-red-600">
@@ -137,27 +168,21 @@ const ProductPage = () => {
                 </div>
               )}
             </div>
-
-            {/* Butcher's Specifications */}
             <div className="grid grid-cols-2 gap-4 bg-white p-6 rounded-xl border border-gray-200">
               <div className="flex items-center gap-3">
                 <CutIcon className="w-8 h-8 text-red-600" />
                 <div>
-                  <p className="text-sm text-gray-500">Cut Type</p>
-                  <p className="font-medium">
-                    {product.category?.name} {/* Display category name */}
-                  </p>
+                  <p className="text-sm text-gray-500">Product Type</p>
+                  <p className="font-medium">{product.category?.name}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 <TypeIcon className="w-8 h-8 text-red-600" />
                 <div>
                   <p className="text-sm text-gray-500">Category Type</p>
-                  <p className="font-medium">
-                    {product.category?.type} {/* Display category type */}
-                  </p>
+                  <p className="font-medium">{product.category?.type}</p>
                 </div>
-              </div>
+              </div> */}
               <div className="flex items-center gap-3">
                 <WeightIcon className="w-8 h-8 text-red-600" />
                 <div>
@@ -180,16 +205,12 @@ const ProductPage = () => {
                 </div>
               </div>
             </div>
-
-            {/* Product Description */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Cut Details</h2>
+              <h2 className="text-xl font-semibold">Product Details</h2>
               <p className="text-gray-600 leading-relaxed">
                 {product.description}
               </p>
             </div>
-
-            {/* Action Buttons */}
             <div className="grid sm:grid-cols-2 gap-4">
               <button
                 onClick={() => addToCart(product._id)}
@@ -236,19 +257,42 @@ const ProductPage = () => {
           </div>
         </div>
 
-        {/* Related Products */}
+        {/* Related Products Carousel */}
         {relatedProducts.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold mb-8">Related Cuts</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
+          <div className="mt-16 relative">
+            <h2 className="text-2xl font-bold mb-8">Related Products</h2>
+            <div className="relative">
+              {/* Left Arrow Button */}
+              <button
+                onClick={() => handleCarousel("prev")}
+                disabled={!canScrollLeft}
+                className={`absolute left-0 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center transition-opacity ${
+                  !canScrollLeft ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+                }`}
+              >
+                &lt;
+              </button>
+              {/* Right Arrow Button */}
+              <button
+                onClick={() => handleCarousel("next")}
+                disabled={!canScrollRight}
+                className={`absolute right-0 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center transition-opacity ${
+                  !canScrollRight ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+                }`}
+              >
+                &gt;
+              </button>
+              <div ref={carouselRef} className="flex gap-6 overflow-x-auto scroll-smooth pb-4">
+                {relatedProducts.map((p) => (
+                  <div key={p._id} className="flex-shrink-0 w-72">
+                    <ProductCard product={p} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
       </div>
-      {/* Footer */}
       <Footer />
     </div>
   );

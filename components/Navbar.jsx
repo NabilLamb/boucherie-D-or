@@ -27,9 +27,7 @@ const Navbar = () => {
   ];
 
   // Compute notification counts.
-  // Using number of unique items for cart. (Alternatively, sum quantities if needed.)
   const cartNotificationCount = Object.keys(cartItems).length;
-  // For liked products, assume wishlist is an array.
   const wishlistNotificationCount = wishlist.length;
 
   const iconLinks = [
@@ -51,6 +49,11 @@ const Navbar = () => {
       notification: wishlistNotificationCount,
     },
   ];
+
+  // Only cart and liked icons for mobile
+  const mobileIconLinks = iconLinks.filter(link => 
+    link.path === "/cart" || link.path === "/my-liked"
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -92,7 +95,7 @@ const Navbar = () => {
     setIsMenuOpen(false);
     const target = document.getElementById(sectionId);
     if (target) {
-      const headerOffset = 96; // adjust according to your navbar height
+      const headerOffset = 96;
       const elementPosition = target.getBoundingClientRect().top;
       const offsetPosition =
         elementPosition + window.pageYOffset - headerOffset;
@@ -238,15 +241,35 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Navigation: Only hamburger button visible */}
-        <div className="lg:hidden flex items-center">
+        {/* Mobile Navigation: Icons + hamburger button */}
+        <div className="lg:hidden flex items-center gap-4">
+          {/* Mobile Icons (Cart and Liked) */}
+          {mobileIconLinks.map(({ path, name, icon, notification }) => (
+            <Link
+              key={path}
+              href={path}
+              className={`relative p-2 rounded-full hover:bg-red-50 transition-colors ${
+                pathname === path ? "text-red-800" : "text-gray-800"
+              }`}
+            >
+              {notification > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-800 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                  {notification > 9 ? "9+" : notification}
+                </span>
+              )}
+              <span className="[&>svg]:w-5 [&>svg]:h-5">{icon}</span>
+              <span className="sr-only">{name}</span>
+            </Link>
+          ))}
+
+          {/* Hamburger Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="p-2 text-gray-800 hover:text-red-800 rounded-full hover:bg-red-50 transition-colors"
             aria-label="Toggle menu"
           >
             <svg
-              className="w-7 h-7 stroke-current text-gray-800"
+              className="w-6 h-6 stroke-current text-gray-800"
               fill="none"
               strokeWidth={2}
               strokeLinecap="round"
@@ -264,6 +287,7 @@ const Navbar = () => {
           </button>
         </div>
       </div>
+
       {/* Mobile Dropdown Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-red-50 shadow-xl">
@@ -316,24 +340,18 @@ const Navbar = () => {
               </Link>
             ))}
 
-            {/* Icons and Account Section */}
+            {/* Additional Links */}
             <div className="flex flex-col gap-3 border-t pt-4">
-              {iconLinks.map(({ path, name, icon, notification }) => (
-                <Link
-                  key={path}
-                  href={path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="relative flex items-center gap-3 py-2 px-4 text-gray-800 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  {notification > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-800 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
-                      {notification}
-                    </span>
-                  )}
-                  {icon}
-                  <span>{name}</span>
-                </Link>
-              ))}
+              {/* Orders Link (only in dropdown) */}
+              <Link
+                href="/my-orders"
+                onClick={() => setIsMenuOpen(false)}
+                className="relative flex items-center gap-3 py-2 px-4 text-gray-800 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <BagIcon className="w-5 h-5 stroke-current" />
+                <span>Orders</span>
+              </Link>
+
               {isSeller && (
                 <button
                   onClick={() => {

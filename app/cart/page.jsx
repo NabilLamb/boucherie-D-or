@@ -10,9 +10,8 @@ import { TruckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-hot-toast";
 
 const Cart = () => {
-  const { cartItems, updateCartQuantity, products, fetchProducts } =
-    useAppContext();
-
+  const { cartItems, updateCartQuantity } = useAppContext();
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
@@ -21,24 +20,27 @@ const Cart = () => {
     const loadCartData = async () => {
       try {
         setLoading(true);
-
-        // Fetch products if empty
-        if (products.length === 0) {
-          await fetchProducts();
+        const itemIds = Object.keys(cartItems);
+        
+        if (itemIds.length === 0) {
+          setProducts([]);
+          return;
         }
 
-        // Check for missing products and remove from cart
-        const missingProducts = Object.keys(cartItems).filter(
-          (itemId) => !products.find((p) => p._id === itemId)
+        const response = await fetch(`/api/products/cart?ids=${itemIds.join(',')}`);
+        const { products: cartProducts } = await response.json();
+
+        // Check for missing products
+        const missingIds = itemIds.filter(id => 
+          !cartProducts.find(p => p._id === id)
         );
 
-        if (missingProducts.length > 0) {
-          const updatedCart = { ...cartItems };
-          missingProducts.forEach((itemId) => delete updatedCart[itemId]);
-          // Use updateCartQuantity to remove items
-          missingProducts.forEach((itemId) => updateCartQuantity(itemId, 0));
+        if (missingIds.length > 0) {
+          missingIds.forEach(id => updateCartQuantity(id, 0));
           toast.error("Some items are unavailable and were removed.");
         }
+
+        setProducts(cartProducts);
       } catch (err) {
         setError(err.message || "Failed to load cart data");
       } finally {
@@ -47,7 +49,7 @@ const Cart = () => {
     };
 
     loadCartData();
-  }, [cartItems, fetchProducts]);
+  }, [cartItems, updateCartQuantity]);
 
   const handleQuantityChange = (productId, newQuantity) => {
     const product = products.find((p) => p._id === productId);
@@ -79,7 +81,7 @@ const Cart = () => {
             </h1>
             <p className="text-lg text-gray-600">
               {validCartItems.length}{" "}
-              {validCartItems.length === 1 ? "Cut" : "Cuts"}
+              {validCartItems.length === 1 ? "Cut" : "Products"}
             </p>
           </div>
 
@@ -96,7 +98,7 @@ const Cart = () => {
                   className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                  Select Premium Cuts
+                  Select Premium Products
                 </Link>
               </div>
             </div>
@@ -334,7 +336,7 @@ const Cart = () => {
                 className="inline-flex items-center mt-8 gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
-                Continue Selecting Cuts
+                Continue Selecting Products
               </Link>
             </>
           )}

@@ -23,9 +23,10 @@ const HomeProducts = () => {
       try {
         setLoading(true);
         const [productsRes, categoriesRes] = await Promise.all([
-          axios.get("/api/products"),
+          axios.get("/api/products?limit=1000"),
           axios.get("/api/categories"),
         ]);
+        
 
         setRegularProducts(productsRes.data.products || []);
         setCategories(categoriesRes.data || []);
@@ -83,7 +84,7 @@ const HomeProducts = () => {
             className="md:hidden flex items-center justify-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-md transition-colors"
           >
             <FiFilter className="w-5 h-5" />
-            <span>Filter Cuts</span>
+            <span>Filter Products</span>
           </button>
 
           {/* Category Sidebar */}
@@ -106,7 +107,7 @@ const HomeProducts = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search our cuts (e.g., ribeye, tenderloin, sausage)..."
+                  placeholder="Search our Products (e.g., ribeye, tenderloin, sausage)..."
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -120,7 +121,7 @@ const HomeProducts = () => {
             {/* Results Count */}
             <div className="mb-6 flex justify-between items-center">
               <p className="text-sm text-gray-600">
-                Showing {paginatedProducts.length} of {filteredProducts.length} cuts
+                Showing {paginatedProducts.length} of {filteredProducts.length} Products
               </p>
               {selectedCategory && (
                 <button
@@ -145,7 +146,7 @@ const HomeProducts = () => {
             ) : paginatedProducts.length === 0 ? (
               <div className="text-center p-12 bg-white rounded-2xl border border-gray-200">
                 <div className="text-2xl text-gray-500 mb-4">
-                  🍖 No Cuts Found
+                  🍖 No Products Found
                 </div>
                 <p className="text-gray-500 mb-6">
                   {searchQuery

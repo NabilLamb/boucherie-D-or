@@ -1,24 +1,13 @@
 import logo from "./logo.png";
 import user_icon from "./user_icon.svg";
-import cart_icon from "./cart_icon.svg";
 import add_icon from "./add_icon.svg";
 import order_icon from "./order_icon.svg";
 import instagram_icon from "./instagram_icon.svg";
 import facebook_icon from "./facebook_icon.svg";
 import twitter_icon from "./twitter_icon.svg";
 import product_list_icon from "./product_list_icon.svg";
-import menu_icon from "./menu_icon.svg";
-import arrow_icon from "./arrow_icon.svg";
-import increase_arrow from "./increase_arrow.svg";
-import decrease_arrow from "./decrease_arrow.svg";
-import arrow_right_icon_colored from "./arrow_right_icon_colored.svg";
 import my_location_image from "./my_location_image.svg";
-import arrow_icon_white from "./arrow_icon_white.svg";
 import heart_icon from "./heart_icon.svg";
-import star_icon from "./star_icon.svg";
-import redirect_icon from "./redirect_icon.svg";
-import star_dull_icon from "./star_dull_icon.svg";
-import upload_area from "./upload_area.png";
 import checkmark from "./checkmark.png";
 
 
@@ -30,7 +19,6 @@ import PremiumSelection from "./aboutUs/PremiumSelection.jpg"
 import ExpertGuidance from "./aboutUs/ExpertGuidance.jpg"
 import abdel_meal from "./aboutUs/abdel_meat.png"
 import annais_meal from "./aboutUs/annais_meat.png"
-import iconGoogleMaps from "./aboutUs/icon-google-maps.svg"
 
 //Contact us import
 import ContactHero from "./contactUs/ContactHero.jpg"
@@ -44,25 +32,14 @@ import default_img from "./default_img.png";
 export const assets = {
   logo,
   user_icon,
-  cart_icon,
   add_icon,
   order_icon,
   instagram_icon,
   facebook_icon,
   twitter_icon,
   product_list_icon,
-  menu_icon,
-  arrow_icon,
-  increase_arrow,
-  decrease_arrow,
-  arrow_right_icon_colored,
   my_location_image,
-  arrow_icon_white,
   heart_icon,
-  star_icon,
-  redirect_icon,
-  star_dull_icon,
-  upload_area,
   checkmark,
 
 
@@ -74,7 +51,6 @@ export const assets = {
   ExpertGuidance,
   abdel_meal,
   annais_meal,
-  iconGoogleMaps,
 
   //Contact us
   ContactHero,

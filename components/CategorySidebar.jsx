@@ -1,6 +1,5 @@
-// CategorySidebar.jsx
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 
 const CategorySidebar = ({
   categories,
@@ -16,6 +15,14 @@ const CategorySidebar = ({
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
+  // Sort categories by type with priority: regular -> banner -> offer -> others
+  const sortedCategories = categories.slice().sort((a, b) => {
+    const typeOrder = { regular: 0, banner: 1, offer: 2 };
+    const aOrder = typeOrder[a.type] ?? 3;
+    const bOrder = typeOrder[b.type] ?? 3;
+    return aOrder - bOrder;
+  });
+
   return (
     <>
       {/* Mobile Backdrop */}
@@ -28,12 +35,12 @@ const CategorySidebar = ({
 
       {/* Sidebar Content */}
       <aside
-  className={`fixed md:sticky md:top-24 left-0 h-screen md:h-auto z-50 w-72 transform transition-transform duration-300 ease-in-out
-    ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
->
+        className={`fixed md:sticky md:top-24 left-0 h-screen md:h-auto z-50 w-72 transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      >
         <div className="h-full md:h-auto bg-white p-6 rounded-r-xl md:rounded-xl shadow-xl border-r md:border">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-900">Filter Cuts</h3>
+            <h3 className="text-xl font-semibold text-gray-900">Filter Products</h3>
             <button
               onClick={() => setSidebarOpen(false)}
               className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
@@ -53,9 +60,9 @@ const CategorySidebar = ({
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              All Cuts
+              All Products
             </button>
-            {categories.map((cat) => (
+            {sortedCategories.map((cat) => (
               <button
                 key={cat._id}
                 onClick={() => handleSelect(cat._id)}

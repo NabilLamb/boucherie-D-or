@@ -10,7 +10,7 @@ const HeaderSlider = () => {
   useEffect(() => {
     const fetchOffers = async () => {
       try {
-        const { data } = await axios.get("/api/products?categoryType=offer");
+        const { data } = await axios.get("/api/products/offer");
         setOffers(data.products);
       } catch (error) {
         console.error("Error fetching offers:", error);

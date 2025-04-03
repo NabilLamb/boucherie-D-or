@@ -10,7 +10,7 @@ const Banner = () => {
   useEffect(() => {
     const fetchBannerProducts = async () => {
       try {
-        const { data } = await axios.get("/api/products?categoryType=banner");
+        const { data } = await axios.get("/api/products/banner");
         setBannerProducts(data.products);
       } catch (error) {
         console.error("Error fetching banner products:", error);
@@ -108,7 +108,7 @@ const Banner = () => {
 
       {/* Pagination */}
       {bannerProducts.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 transform gap-2">
+        <div className=" absolute bottom-3 left-1/2 flex -translate-x-1/2 transform gap-2">
           {bannerProducts.map((_, index) => (
             <button
               key={index}

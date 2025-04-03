@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Calendar } from "react-feather";
 
 const Orders = () => {
   const { currency, getToken, user } = useAppContext();

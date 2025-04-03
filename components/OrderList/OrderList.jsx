@@ -13,25 +13,11 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
+  Info
 } from "react-feather";
 import Image from "next/image";
 import { getImageSource } from "@/utils/images";
 import Invoice from "@/components/Invoice/Invoice";
-
-const OrderList = ({
-  orders,
-  currency,
-  stats,
-  startDate,
-  setStartDate,
-  endDate,
-  setEndDate,
-  onStatusChange,
-  isSeller = false,
-  header,
-}) => {
-  const [expandedOrder, setExpandedOrder] = useState(null);
-  const [invoiceOrderId, setInvoiceOrderId] = useState(null);
 
 const StatusIndicator = ({ status }) => {
   const statusConfig = {
@@ -40,33 +26,34 @@ const StatusIndicator = ({ status }) => {
       icon: <Package size={16} />,
       label: 'Order Placed'
     },
-    Processing: {
+    'Processing': {
       color: 'bg-purple-100 text-purple-800',
       icon: <Clock size={16} />,
       label: 'Processing'
     },
-    Shipped: {
+    'Shipped': {
       color: 'bg-amber-100 text-amber-800',
       icon: <Truck size={16} />,
       label: 'Shipped'
     },
-    Completed: {
+    'Completed': {
       color: 'bg-green-100 text-green-800',
       icon: <CheckCircle size={16} />,
       label: 'Completed'
     },
-    Cancelled: {
+    'Cancelled': {
       color: 'bg-red-100 text-red-800',
       icon: <XCircle size={16} />,
       label: 'Cancelled'
+    },
+    'default': {
+      color: 'bg-gray-100 text-gray-800',
+      icon: <Info size={16} />,
+      label: status || 'Unknown'
     }
   };
 
-  const config = statusConfig[status] || {
-    color: 'bg-gray-100 text-gray-800',
-    icon: <Info size={16} />,
-    label: status
-  };
+  const config = statusConfig[status] || statusConfig['default'];
 
   return (
     <div className={`inline-flex items-center rounded-full py-1 px-3 text-sm ${config.color}`}>
@@ -76,40 +63,58 @@ const StatusIndicator = ({ status }) => {
   );
 };
 
+const OrderList = ({
+  orders = [],
+  currency = '$',
+  stats = [],
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
+  onStatusChange,
+  isSeller = false,
+  headerTitle = "Order Management Dashboard",
+  headerDescription = "Monitor and manage customer orders"
+}) => {
+  const [expandedOrder, setExpandedOrder] = useState(null);
+  const [invoiceOrderId, setInvoiceOrderId] = useState(null);
+
   const toggleOrderDetails = (orderId) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
   };
 
   const formatOrderDate = (timestamp) => {
+    if (!timestamp) return 'Date not available';
+    
+    // Use UTC to avoid timezone differences
     const date = new Date(timestamp);
-    return `${date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })} • ${date.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    })}`;
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const month = date.toLocaleString('default', { month: 'short', timeZone: 'UTC' });
+    const year = date.getUTCFullYear();
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  
+    return `${day} ${month} ${year} • ${hours}:${minutes}`;
   };
 
-  const renderOrderItems = (items) => (
+  const renderOrderItems = (items = []) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {items.map((item, index) => {
         const snapshot = item?.productSnapshot || {};
         return (
           <div
             key={item?._id || `item-${index}`}
-            className="bg-white p-4 rounded-lg shadow border border-gray-200"
+            className="bg-white p-4 rounded-lg shadow border border-gray-200 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start gap-4">
-              <div className="relative w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
+              <div className="relative w-16 h-16 bg-gray-100 rounded-md overflow-hidden shrink-0">
                 {snapshot?.image?.[0] ? (
                   <Image
                     src={getImageSource(snapshot.image[0])}
                     alt={snapshot?.name || "Product image"}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -117,8 +122,8 @@ const StatusIndicator = ({ status }) => {
                   </div>
                 )}
               </div>
-              <div className="flex-1">
-                <h4 className="font-medium">
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium truncate">
                   {snapshot?.name || "Unnamed Product"}
                 </h4>
                 <div className="text-sm text-gray-600 mt-1 space-y-1">
@@ -128,18 +133,15 @@ const StatusIndicator = ({ status }) => {
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
                       {currency}
-                      {snapshot?.offerPrice || snapshot?.price || "0.00"}
+                      {(snapshot?.offerPrice || snapshot?.price || 0).toFixed(2)}
                     </span>
-                    {snapshot?.offerPrice && (
+                    {snapshot?.offerPrice && snapshot?.price && (
                       <span className="line-through text-gray-400">
                         {currency}
-                        {snapshot?.price || "0.00"}
+                        {snapshot.price.toFixed(2)}
                       </span>
                     )}
                   </div>
-                  {/* <p className="text-xs text-gray-500 capitalize">
-                    Category: {snapshot?.category || "Uncategorized"}
-                  </p> */}
                 </div>
               </div>
             </div>
@@ -150,37 +152,45 @@ const StatusIndicator = ({ status }) => {
   );
 
   return (
-    <>
-      {header && (
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">{header.title}</h1>
-          <p className="mt-2 text-gray-600">{header.description}</p>
-        </header>
-      )}
+    <div className="space-y-8" suppressHydrationWarning>
+      {/* Header */}
+      <header className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          {headerTitle}
+        </h1>
+        <p className="mt-2 text-gray-600 max-w-3xl">
+          {headerDescription}
+        </p>
+      </header>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <div
             key={index}
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-200"
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
           >
-            <div className="text-gray-600 text-sm mb-1">{stat.title}</div>
-            <div className="text-2xl font-bold">{stat.value}</div>
+            <div className="text-gray-600 text-sm font-medium mb-1">
+              {stat.title}
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {stat.value}
+            </div>
           </div>
         ))}
       </div>
 
       {/* Date Filters */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Calendar className="text-gray-400" size={18} />
             <input
               type="date"
-              className="form-input rounded-md border-gray-300"
-              value={startDate}
+              className="form-input rounded-md border-gray-300 w-full"
+              value={startDate || ''}
               onChange={(e) => setStartDate(e.target.value)}
+              max={endDate || undefined}
             />
           </div>
           <span className="text-gray-400 hidden sm:block">–</span>
@@ -188,9 +198,10 @@ const StatusIndicator = ({ status }) => {
             <Calendar className="text-gray-400" size={18} />
             <input
               type="date"
-              className="form-input rounded-md border-gray-300"
-              value={endDate}
+              className="form-input rounded-md border-gray-300 w-full"
+              value={endDate || ''}
               onChange={(e) => setEndDate(e.target.value)}
+              min={startDate || undefined}
             />
           </div>
           <button
@@ -198,7 +209,7 @@ const StatusIndicator = ({ status }) => {
               setStartDate("");
               setEndDate("");
             }}
-            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
             Clear Filters
           </button>
@@ -206,12 +217,12 @@ const StatusIndicator = ({ status }) => {
       </div>
 
       {/* Orders List */}
-      
-        <div className="space-y-4">
-          {orders.map((order) => (
+      <div className="space-y-4">
+        {orders.length > 0 ? (
+          orders.map((order) => (
             <div
               key={order._id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
             >
               <div
                 className="p-6 cursor-pointer"
@@ -220,13 +231,15 @@ const StatusIndicator = ({ status }) => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-center">
                   <div>
                     <p className="text-sm text-gray-500">Order ID</p>
-                    <p className="font-medium">
-                      #{order._id.toString().slice(-6).toUpperCase()}
+                    <p className="font-medium truncate">
+                      #{order._id?.toString().slice(-6).toUpperCase() || 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Customer</p>
-                    <p className="font-medium">{order.address.fullName}</p>
+                    <p className="font-medium truncate">
+                      {order.address?.fullName || 'Guest Customer'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Date</p>
@@ -241,12 +254,12 @@ const StatusIndicator = ({ status }) => {
                   <div className="text-right">
                     <p className="text-lg font-semibold text-gray-900">
                       {currency}
-                      {order.amount.toFixed(2)}
+                      {(order.amount || 0).toFixed(2)}
                     </p>
-                    <div className="flex items-center gap-2 mt-1 text-gray-500">
+                    <div className="flex items-center justify-end gap-2 mt-1 text-gray-500">
                       <span className="text-sm">
-                        {order.items.length} item
-                        {order.items.length > 1 ? "s" : ""}
+                        {order.items?.length || 0} item
+                        {(order.items?.length || 0) !== 1 ? 's' : ''}
                       </span>
                       <ChevronDown
                         className={`w-5 h-5 transition-transform ${
@@ -259,51 +272,58 @@ const StatusIndicator = ({ status }) => {
               </div>
 
               {expandedOrder === order._id && (
-                <div className="border-t p-6 bg-gray-50">
+                <div className="border-t p-6 bg-gray-50 rounded-b-xl">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Package size={20} /> Purchased Items
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800">
+                        <Package size={20} className="text-blue-500" /> Purchased Items
                       </h3>
                       {renderOrderItems(order.items)}
                     </div>
 
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                          <User size={20} /> Customer Details
+                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-800">
+                          <User size={20} className="text-purple-500" /> Customer Details
                         </h3>
                         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-                          <div className="space-y-2 text-sm">
-                            <p className="font-medium">
-                              {order.address.fullName}
+                          <div className="space-y-3 text-sm">
+                            <p className="font-medium text-gray-900">
+                              {order.address?.fullName || 'Customer name not available'}
                             </p>
-                            <p className="flex items-center gap-2 text-gray-600">
-                              <MapPin size={16} />
-                              {order.address.address}, {order.address.city}{" "}
-                              {order.address.postalCode}
-                            </p>
-                            <p className="flex items-center gap-2 text-gray-600">
-                              <Phone size={16} />
-                              {order.address.phone}
-                            </p>
+                            {order.address?.address && (
+                              <p className="flex items-start gap-2 text-gray-600">
+                                <MapPin size={16} className="mt-0.5 text-gray-400 flex-shrink-0" />
+                                <span>
+                                  {[order.address.address, order.address.city, order.address.postalCode]
+                                    .filter(Boolean)
+                                    .join(', ')}
+                                </span>
+                              </p>
+                            )}
+                            {order.address?.phone && (
+                              <p className="flex items-center gap-2 text-gray-600">
+                                <Phone size={16} className="text-gray-400" />
+                                {order.address.phone}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
+
                       <div>
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                          <Truck size={20} /> Shipping Actions
+                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-800">
+                          <Truck size={20} className="text-amber-500" /> Order Actions
                         </h3>
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-3">
                           {isSeller && (
-                            <div className="relative w-full">
-                              
+                            <div className="relative flex-1">
                               <select
-                                value={order.status}
+                                value={order.status || 'Order Placed'}
                                 onChange={(e) =>
                                   onStatusChange(order._id, e.target.value)
                                 }
-                                className="w-full px-4 py-2 pr-8 bg-white border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 pr-8 bg-white border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                               >
                                 {[
                                   "Order Placed",
@@ -317,14 +337,14 @@ const StatusIndicator = ({ status }) => {
                                   </option>
                                 ))}
                               </select>
-                              <ChevronDown className="absolute right-3 top-3 text-gray-400" size={18} />
+                              <ChevronDown className="absolute right-3 top-2.5 text-gray-400" size={18} />
                             </div>
                           )}
                           <button
                             onClick={() => setInvoiceOrderId(order._id)}
-                            className="block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
                           >
-                            <Printer size={18} />
+                            <Printer size={16} />
                             Print Invoice
                           </button>
                         </div>
@@ -334,8 +354,30 @@ const StatusIndicator = ({ status }) => {
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          ))
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+            <Package size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-medium text-gray-900 mb-2">No orders found</h3>
+            <p className="text-gray-600 mb-4">
+              {startDate || endDate 
+                ? "Try adjusting your date filters" 
+                : "You don't have any orders yet"}
+            </p>
+            {(startDate || endDate) && (
+              <button
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Invoice Modal */}
       {invoiceOrderId && (
@@ -354,7 +396,7 @@ const StatusIndicator = ({ status }) => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
