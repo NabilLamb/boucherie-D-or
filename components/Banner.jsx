@@ -9,6 +9,7 @@ const Banner = () => {
   const [bannerProducts, setBannerProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { addToCart, router, user } = useAppContext(); // Include user from context
+  const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
   useEffect(() => {
     const fetchBannerProducts = async () => {
@@ -70,15 +71,15 @@ const Banner = () => {
                 {product.offerPrice ? (
                   <>
                     <span className="text-3xl font-bold md:text-4xl">
-                      ${product.offerPrice}
+                      {currency}{product.offerPrice}
                     </span>
                     <span className="text-xl text-red-200 line-through">
-                      ${product.price}
+                      {currency}{product.price}
                     </span>
                   </>
                 ) : (
                   <span className="text-3xl font-bold md:text-4xl">
-                    ${product.price}
+                    {currency}{product.price}
                   </span>
                 )}
                 <span className="text-lg text-red-200">/{product.unit}</span>
