@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
+import Link from "next/link";
+import toast from "react-hot-toast";
+
 const Banner = () => {
   const [bannerProducts, setBannerProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { addToCart, router } = useAppContext();
+  const { addToCart, router, user } = useAppContext(); // Include user from context
 
   useEffect(() => {
     const fetchBannerProducts = async () => {
@@ -20,6 +23,10 @@ const Banner = () => {
   }, []);
 
   const handleAddToCart = (product) => {
+    if (!user) {
+      toast.error("Please login to add to cart");
+      return;
+    }
     addToCart(product._id);
   };
 
@@ -77,16 +84,31 @@ const Banner = () => {
                 <span className="text-lg text-red-200">/{product.unit}</span>
               </div>
 
-              <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddToCart(product);
-                router.push("/cart");
-              }}
-              
-              className="mt-8 inline-block w-fit rounded-full bg-white px-8 py-3 text-lg font-semibold text-red-600 transition-all hover:bg-opacity-90">
-                Shop Now →
-              </button>
+              <div className="mt-8 flex flex-col md:flex-row items-start md:items-center gap-4">
+                <Link
+                  href={`/product/${product._id}`}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-2 md:px-8 md:py-3 text-base md:text-lg font-semibold text-red-600 transition-all hover:bg-gray-100 hover:scale-105 hover:shadow-md"
+                >
+                  Discover the Offer
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!user) {
+                      toast.error("Please login to add to cart");
+                      return;
+                    }
+                    handleAddToCart(product);
+                    router.push("/cart");
+                  }}
+                  className="inline-block w-fit rounded-full bg-amber-400 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-amber-500 hover:scale-105 hover:shadow-md"
+                >
+                  Shop Now →
+                </button>
+              </div>
             </div>
 
             {/* Images */}

@@ -1,13 +1,11 @@
 import connectDB from "@/config/db";
 import Product from "@/models/Product";
-import Category from "@/models/Category";
 
 export const GET = async (req) => {
   try {
     await connectDB();
     const { searchParams } = new URL(req.url);
     
-    const query = {};
     const category = searchParams.get('category');
     const exclude = searchParams.get('exclude');
     const limit = parseInt(searchParams.get('limit')) || 8;

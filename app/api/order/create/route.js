@@ -14,7 +14,6 @@ export async function POST(request) {
 
     const { address, items } = await request.json();
 
-    console.log("Received order create request with data:", { address, items });
 
     if (!address || !items || items.length === 0) {
       return NextResponse.json({ success: false, message: "Invalid data" }, { status: 400 });

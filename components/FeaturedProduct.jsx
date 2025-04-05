@@ -11,10 +11,14 @@ import { useAppContext } from "@/context/AppContext";
 const FeaturedProduct = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart } = useAppContext();
+  const { addToCart, user } = useAppContext(); // Include user from context
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
   const handleAddToCart = (product) => {
+    if (!user) {
+      toast.error("Please login to add to cart");
+      return;
+    }
     addToCart(product._id);
     toast.success(`${product.name} added to cart`);
   };
@@ -24,11 +28,11 @@ const FeaturedProduct = () => {
       try {
         setLoading(true);
         const { data } = await axios.get("/api/products/featured?categoryType=featured&limit=4");
-        
-        const filteredProducts = data.products.filter(product => 
+
+        const filteredProducts = data.products.filter(product =>
           product.category?.type === 'featured'
         );
-        
+
         setFeaturedProducts(filteredProducts);
       } catch (error) {
         console.error("Error fetching featured products:", error);
@@ -46,7 +50,7 @@ const FeaturedProduct = () => {
         {/* Section Header */}
         <div className="text-center mb-12 lg:mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-            Butcher's Selection
+            Featured Products
           </h2>
           <div className="w-28 h-1.5 bg-amber-600 mx-auto rounded-full mt-4 mb-6" />
           <p className="mt-2 max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed">
@@ -100,14 +104,14 @@ const FeaturedProduct = () => {
                       <FiStar className="mr-1" size={10} />
                       <span>FEATURED</span>
                     </div>
-                    
+
                     {/* Discount Badge - Smaller on mobile */}
                     {product.offerPrice && (
                       <div className="bg-red-600 text-white px-2 py-1 rounded-md text-[7px] sm:text-xs font-bold shadow-sm">
                         SAVE{" "}
                         {Math.round(
                           ((product.price - product.offerPrice) / product.price) *
-                            100
+                          100
                         )}
                         %
                       </div>

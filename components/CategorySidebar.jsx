@@ -35,18 +35,30 @@ const CategorySidebar = ({
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed md:sticky md:top-24 left-0 h-screen md:h-auto z-50 w-72 transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        className={`fixed top-0 md:sticky md:top-24 left-0 h-screen md:h-auto z-50 w-72 transform transition-transform duration-300 ease-in-out
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <div className="h-full md:h-auto bg-white p-6 rounded-r-xl md:rounded-xl shadow-xl border-r md:border">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-900">Filter Products</h3>
+            <h3 className="text-xl font-semibold text-gray-900">
+              Filter Products
+            </h3>
             <button
               onClick={() => setSidebarOpen(false)}
               className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -55,7 +67,7 @@ const CategorySidebar = ({
             <button
               onClick={() => handleSelect(null)}
               className={`w-full px-4 py-2.5 text-left rounded-lg transition-colors ${
-                !selectedCategory 
+                !selectedCategory
                   ? "bg-amber-100 text-amber-700 font-medium"
                   : "text-gray-600 hover:bg-gray-100"
               }`}

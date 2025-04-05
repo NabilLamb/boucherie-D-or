@@ -36,7 +36,6 @@ export async function POST(request) {
       `,
     });
 
-    console.log('Message sent: %s', info.messageId);
 
     return NextResponse.json(
       { success: true, message: 'Message sent successfully' },

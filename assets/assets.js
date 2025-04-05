@@ -110,102 +110,11 @@ export const HeartIcon = ({ filled, className }) => (
   </svg>
 );
 
-
-export const BoxIcon = ({ className, width = 24, height = 24 }) => (
-  <svg 
-    className={className}
-    width={width}
-    height={height}
-    viewBox="0 0 100 100"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path 
-      fillRule="evenodd" 
-      clipRule="evenodd" 
-      fill="#FBF063" 
-      d="M7 22L50 0l43 22-43 21.001L7 22z"
-    />
-    <path 
-      fillRule="evenodd" 
-      clipRule="evenodd" 
-      fill="#F29C1F" 
-      d="M50.003 42.997L7 22v54.28l43.006 21.714-.003-54.997z"
-    />
-    <path 
-      fillRule="evenodd" 
-      clipRule="evenodd" 
-      fill="#F0C419" 
-      d="M50 97.994L93.006 76.28V22L50.003 42.997 50 97.994z"
-    />
-    <path 
-      opacity="0.5" 
-      fillRule="evenodd" 
-      clipRule="evenodd" 
-      fill="#F29C1F" 
-      d="M27.036 11.705l42.995 21.498 2.263-1.105-43.047-21.524z"
-    />
-    <path 
-      opacity="0.5" 
-      fillRule="evenodd" 
-      clipRule="evenodd" 
-      fill="#ffffff" 
-      d="M21.318 14.674L63.3 36.505l15.99-7.809L35.788 7.271z"
-    />
-    <path 
-      opacity="0.5" 
-      fillRule="evenodd" 
-      clipRule="evenodd" 
-      fill="#ffffff" 
-      d="M63.312 36.505l15.978-7.818v11l-15.978 8.817V36.505z"
-    />
-  </svg>
-);
-
-export const HomeIcon = () => (
-  <svg className="w-5 h-5 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" >
-    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" />
-  </svg>
-);
-
 export const successIcon = () => (
   <svg width="24px" height="24px" viewBox="0 0 512 512" fill="#22c55e">
     <path d="M213.333333,3.55271368e-14 C95.51296,3.55271368e-14 3.55271368e-14,95.51296 3.55271368e-14,213.333333 C3.55271368e-14,331.153707 95.51296,426.666667 213.333333,426.666667 C331.153707,426.666667 426.666667,331.153707 426.666667,213.333333 C426.666667,95.51296 331.153707,3.55271368e-14 213.333333,3.55271368e-14 Z M213.333333,384 C119.227947,384 42.6666667,307.43872 42.6666667,213.333333 C42.6666667,119.227947 119.227947,42.6666667 213.333333,42.6666667 C307.43872,42.6666667 384,119.227947 384,213.333333 C384,307.43872 307.438933,384 213.333333,384 Z M293.669333,137.114453 L323.835947,167.281067 L192,299.66912 L112.916693,220.585813 L143.083307,190.4192 L192,239.335893 L293.669333,137.114453 Z" />
   </svg>
 );
-
-export const searchIcon = () => (
-  <svg
-    className="w-5 h-5 text-gray-400"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <line
-      x1="21"
-      y1="21"
-      x2="15"
-      y2="15"
-      stroke="rgb(44, 169, 188)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle
-      cx="10"
-      cy="10"
-      r="7"
-      stroke="rgb(0, 0, 0)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-
-
-
-
 
 
 

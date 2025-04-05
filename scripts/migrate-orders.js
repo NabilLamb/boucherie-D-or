@@ -45,7 +45,6 @@ async function migrateOrders() {
       migratedCount++;
     }
 
-    console.log(`Successfully migrated ${migratedCount} orders`);
     process.exit(0);
   } catch (error) {
     console.error('Migration failed:', error);

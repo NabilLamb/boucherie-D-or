@@ -9,10 +9,11 @@ import ProductCard from "@/components/ProductCard";
 import { StarIcon, WeightIcon, AgeIcon, CutIcon, TypeIcon } from "@/components/Icons";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { toast } from "react-hot-toast"; // Import toast
 
 const ProductPage = () => {
   const { id } = useParams();
-  const { currency, addToCart, router } = useAppContext();
+  const { currency, addToCart, router, user } = useAppContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,6 +42,24 @@ const ProductPage = () => {
     });
   };
 
+  const handleAddToCartClick = () => {
+    if (!user) {
+      toast.error("Please login to add to cart");
+      return;
+    }
+    addToCart(product._id);
+    toast.success(`${product.name} added to cart`);
+  };
+
+  const handleShopNowClick = () => {
+    if (!user) {
+      toast.error("Please login to checkout");
+      return;
+    }
+    addToCart(product._id);
+    router.push("/cart");
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -48,10 +67,9 @@ const ProductPage = () => {
         // Fetch main product details
         const { data: productData } = await axios.get(`/api/products/${id}`);
         if (!productData.success) throw new Error(productData.message);
-        console.log(productData);
 
         // Fetch related products using the new API logic:
-        // It fetches same-category products first (excluding the current product) 
+        // It fetches same-category products first (excluding the current product)
         // and fills the remainder with other products.
         const { data: relatedData } = await axios.get(
           `/api/products?category=${productData.product.category._id}&exclude=${id}&limit=1000`
@@ -213,7 +231,7 @@ const ProductPage = () => {
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <button
-                onClick={() => addToCart(product._id)}
+                onClick={handleAddToCartClick}
                 className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-semibold transition-colors"
               >
                 <svg
@@ -232,10 +250,7 @@ const ProductPage = () => {
                 Add to Cart
               </button>
               <button
-                onClick={() => {
-                  addToCart(product._id);
-                  router.push("/cart");
-                }}
+                onClick={handleShopNowClick}
                 className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white py-4 rounded-xl font-semibold transition-colors"
               >
                 <svg

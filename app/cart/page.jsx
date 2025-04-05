@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import OrderSummary from "@/components/OrderSummary";
 import Navbar from "@/components/Navbar";
+import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import { getImageSource } from "@/utils/images";
 import { TruckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
@@ -16,27 +17,27 @@ const Cart = () => {
   const [error, setError] = useState(null);
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
+  const itemIds = useMemo(() => Object.keys(cartItems), [cartItems]);
+
   useEffect(() => {
     const loadCartData = async () => {
       try {
-        setLoading(true);
-        const itemIds = Object.keys(cartItems);
-        
         if (itemIds.length === 0) {
           setProducts([]);
           return;
         }
 
-        const response = await fetch(`/api/products/cart?ids=${itemIds.join(',')}`);
+        const response = await fetch(
+          `/api/products/cart?ids=${itemIds.join(",")}`
+        );
         const { products: cartProducts } = await response.json();
 
-        // Check for missing products
-        const missingIds = itemIds.filter(id => 
-          !cartProducts.find(p => p._id === id)
+        const missingIds = itemIds.filter(
+          (id) => !cartProducts.find((p) => p._id === id)
         );
 
         if (missingIds.length > 0) {
-          missingIds.forEach(id => updateCartQuantity(id, 0));
+          missingIds.forEach((id) => updateCartQuantity(id, 0));
           toast.error("Some items are unavailable and were removed.");
         }
 
@@ -49,35 +50,33 @@ const Cart = () => {
     };
 
     loadCartData();
-  }, [cartItems, updateCartQuantity]);
+  }, [itemIds, updateCartQuantity]);
 
   const handleQuantityChange = (productId, newQuantity) => {
     const product = products.find((p) => p._id === productId);
     if (!product) return;
 
     const minQty = ["kg", "liter"].includes(product.unit) ? 0.1 : 1;
-    const roundedQty = Math.round(newQuantity * 10) / 10; // For decimal precision
+    const roundedQty = Math.round(newQuantity * 10) / 10;
     updateCartQuantity(productId, Math.max(minQty, roundedQty));
   };
 
-  // Filter out products that don't exist in our catalog
   const validCartItems = Object.keys(cartItems).filter((itemId) => {
     return products.find((p) => p._id === itemId) && cartItems[itemId] > 0;
   });
 
-  if (loading) return <div className="text-center py-20">Loading cart...</div>;
+  if (loading) return <Loading />;
   if (error)
     return <div className="text-center py-20 text-red-500">{error}</div>;
 
   return (
     <>
       <Navbar />
-      <div className="flex flex-col md:flex-row gap-8 px-4 md:px-8 lg:px-16 mb-20 pt-20">
+      <div className="mt-10 flex flex-col md:flex-row gap-8 px-4 md:px-8 lg:px-16 mb-20 pt-20">
         <div className="flex-1">
-          {/* Header */}
           <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-200">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Your Meat Selection
+              Your <span className="text-red-600">Cart</span>
             </h1>
             <p className="text-lg text-gray-600">
               {validCartItems.length}{" "}
@@ -85,7 +84,6 @@ const Cart = () => {
             </p>
           </div>
 
-          {/* If no valid items, show empty cart */}
           {validCartItems.length === 0 ? (
             <div className="text-center py-20">
               <div className="max-w-md mx-auto">
@@ -104,7 +102,6 @@ const Cart = () => {
             </div>
           ) : (
             <>
-              {/* Desktop Table */}
               <div className="hidden md:block">
                 <table className="w-full">
                   <thead className="bg-gray-50">
@@ -141,7 +138,6 @@ const Cart = () => {
                           key={itemId}
                           className="border-b border-gray-100 hover:bg-gray-50"
                         >
-                          {/* Product Info */}
                           <td className="py-6 px-6">
                             <div className="flex items-center gap-4">
                               <Link
@@ -174,12 +170,10 @@ const Cart = () => {
                               </div>
                             </div>
                           </td>
-                          {/* Price */}
                           <td className="py-6 px-6 text-center text-gray-700">
                             {currency}
                             {price.toFixed(2)}
                           </td>
-                          {/* Quantity */}
                           <td className="py-6 px-6 text-center">
                             <div className="flex items-center justify-center gap-1">
                               <button
@@ -220,11 +214,9 @@ const Cart = () => {
                               </button>
                             </div>
                           </td>
-                          {/* Unit */}
                           <td className="py-6 px-6 text-center text-gray-700 uppercase">
                             {product.unit}
                           </td>
-                          {/* Total */}
                           <td className="py-6 px-6 text-right text-gray-700 font-medium">
                             {currency}
                             {(price * cartItems[itemId]).toFixed(2)}
@@ -236,7 +228,6 @@ const Cart = () => {
                 </table>
               </div>
 
-              {/* Mobile List */}
               <div className="md:hidden space-y-4">
                 {validCartItems.map((itemId) => {
                   const product = products.find((p) => p._id === itemId);
@@ -342,7 +333,6 @@ const Cart = () => {
           )}
         </div>
 
-        {/* Order Summary Component */}
         <OrderSummary />
       </div>
     </>

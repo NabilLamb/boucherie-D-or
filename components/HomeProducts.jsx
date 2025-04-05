@@ -5,7 +5,12 @@ import ProductCard from "./ProductCard";
 import CategorySidebar from "./CategorySidebar";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { FiFilter, FiSearch, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+  FiFilter,
+  FiSearch,
+  FiChevronLeft,
+  FiChevronRight,
+} from "react-icons/fi";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -26,9 +31,13 @@ const HomeProducts = () => {
           axios.get("/api/products?limit=1000"),
           axios.get("/api/categories"),
         ]);
-        
 
-        setRegularProducts(productsRes.data.products || []);
+        // Sort products by createdAt date (newest first)
+        const sortedProducts = (productsRes.data.products || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+        setRegularProducts(sortedProducts);
         setCategories(categoriesRes.data || []);
       } catch (error) {
         toast.error(error.response?.data?.error || "Failed to load products");
@@ -69,10 +78,14 @@ const HomeProducts = () => {
         {/* Section Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Premium Meat Selection
+            Our Products
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-            Hand-cut, locally sourced meats from our family to yours
+          <p className="mt-4 text-gray-600 max-w-3xl mx-auto">
+            Discover our wide range of high-quality products, sourced from the
+            finest suppliers. Whether you're looking for premium cuts of meat,
+            gourmet sausages, or specialty items, we have something for every
+            palate. Explore our selection and find the perfect ingredients for
+            your next meal.
           </p>
           <div className="w-32 h-1.5 bg-amber-600 mx-auto rounded-full mt-6" />
         </div>
@@ -121,7 +134,8 @@ const HomeProducts = () => {
             {/* Results Count */}
             <div className="mb-6 flex justify-between items-center">
               <p className="text-sm text-gray-600">
-                Showing {paginatedProducts.length} of {filteredProducts.length} Products
+                Showing {paginatedProducts.length} of {filteredProducts.length}{" "}
+                Products
               </p>
               {selectedCategory && (
                 <button

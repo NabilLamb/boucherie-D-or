@@ -13,7 +13,7 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
-  Info
+  Info,
 } from "react-feather";
 import Image from "next/image";
 import { getImageSource } from "@/utils/images";
@@ -21,42 +21,44 @@ import Invoice from "@/components/Invoice/Invoice";
 
 const StatusIndicator = ({ status }) => {
   const statusConfig = {
-    'Order Placed': {
-      color: 'bg-blue-100 text-blue-800',
+    "Order Placed": {
+      color: "bg-blue-100 text-blue-800",
       icon: <Package size={16} />,
-      label: 'Order Placed'
+      label: "Order Placed",
     },
-    'Processing': {
-      color: 'bg-purple-100 text-purple-800',
+    Processing: {
+      color: "bg-purple-100 text-purple-800",
       icon: <Clock size={16} />,
-      label: 'Processing'
+      label: "Processing",
     },
-    'Shipped': {
-      color: 'bg-amber-100 text-amber-800',
+    Shipped: {
+      color: "bg-amber-100 text-amber-800",
       icon: <Truck size={16} />,
-      label: 'Shipped'
+      label: "Shipped",
     },
-    'Completed': {
-      color: 'bg-green-100 text-green-800',
+    Completed: {
+      color: "bg-green-100 text-green-800",
       icon: <CheckCircle size={16} />,
-      label: 'Completed'
+      label: "Completed",
     },
-    'Cancelled': {
-      color: 'bg-red-100 text-red-800',
+    Cancelled: {
+      color: "bg-red-100 text-red-800",
       icon: <XCircle size={16} />,
-      label: 'Cancelled'
+      label: "Cancelled",
     },
-    'default': {
-      color: 'bg-gray-100 text-gray-800',
+    default: {
+      color: "bg-gray-100 text-gray-800",
       icon: <Info size={16} />,
-      label: status || 'Unknown'
-    }
+      label: status || "Unknown",
+    },
   };
 
-  const config = statusConfig[status] || statusConfig['default'];
+  const config = statusConfig[status] || statusConfig["default"];
 
   return (
-    <div className={`inline-flex items-center rounded-full py-1 px-3 text-sm ${config.color}`}>
+    <div
+      className={`inline-flex items-center rounded-full py-1 px-3 text-sm ${config.color}`}
+    >
       {config.icon}
       <span className="ml-2">{config.label}</span>
     </div>
@@ -65,7 +67,7 @@ const StatusIndicator = ({ status }) => {
 
 const OrderList = ({
   orders = [],
-  currency = '$',
+  currency = "$",
   stats = [],
   startDate,
   setStartDate,
@@ -74,7 +76,7 @@ const OrderList = ({
   onStatusChange,
   isSeller = false,
   headerTitle = "Order Management Dashboard",
-  headerDescription = "Monitor and manage customer orders"
+  headerDescription = "Monitor and manage customer orders",
 }) => {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
@@ -84,16 +86,19 @@ const OrderList = ({
   };
 
   const formatOrderDate = (timestamp) => {
-    if (!timestamp) return 'Date not available';
-    
+    if (!timestamp) return "Date not available";
+
     // Use UTC to avoid timezone differences
     const date = new Date(timestamp);
-    const day = date.getUTCDate().toString().padStart(2, '0');
-    const month = date.toLocaleString('default', { month: 'short', timeZone: 'UTC' });
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    const month = date.toLocaleString("default", {
+      month: "short",
+      timeZone: "UTC",
+    });
     const year = date.getUTCFullYear();
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-  
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+
     return `${day} ${month} ${year} • ${hours}:${minutes}`;
   };
 
@@ -133,7 +138,9 @@ const OrderList = ({
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
                       {currency}
-                      {(snapshot?.offerPrice || snapshot?.price || 0).toFixed(2)}
+                      {(snapshot?.offerPrice || snapshot?.price || 0).toFixed(
+                        2
+                      )}
                     </span>
                     {snapshot?.offerPrice && snapshot?.price && (
                       <span className="line-through text-gray-400">
@@ -158,9 +165,7 @@ const OrderList = ({
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
           {headerTitle}
         </h1>
-        <p className="mt-2 text-gray-600 max-w-3xl">
-          {headerDescription}
-        </p>
+        <p className="mt-2 text-gray-600 max-w-3xl">{headerDescription}</p>
       </header>
 
       {/* Statistics Cards */}
@@ -173,9 +178,7 @@ const OrderList = ({
             <div className="text-gray-600 text-sm font-medium mb-1">
               {stat.title}
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {stat.value}
-            </div>
+            <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
           </div>
         ))}
       </div>
@@ -188,7 +191,7 @@ const OrderList = ({
             <input
               type="date"
               className="form-input rounded-md border-gray-300 w-full"
-              value={startDate || ''}
+              value={startDate || ""}
               onChange={(e) => setStartDate(e.target.value)}
               max={endDate || undefined}
             />
@@ -199,7 +202,7 @@ const OrderList = ({
             <input
               type="date"
               className="form-input rounded-md border-gray-300 w-full"
-              value={endDate || ''}
+              value={endDate || ""}
               onChange={(e) => setEndDate(e.target.value)}
               min={startDate || undefined}
             />
@@ -232,20 +235,18 @@ const OrderList = ({
                   <div>
                     <p className="text-sm text-gray-500">Order ID</p>
                     <p className="font-medium truncate">
-                      #{order._id?.toString().slice(-6).toUpperCase() || 'N/A'}
+                      #{order._id?.toString().slice(-6).toUpperCase() || "N/A"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Customer</p>
                     <p className="font-medium truncate">
-                      {order.address?.fullName || 'Guest Customer'}
+                      {order.address?.fullName || "Guest Customer"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Date</p>
-                    <p className="font-medium">
-                      {formatOrderDate(order.date)}
-                    </p>
+                    <p className="font-medium">{formatOrderDate(order.date)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Status</p>
@@ -259,7 +260,7 @@ const OrderList = ({
                     <div className="flex items-center justify-end gap-2 mt-1 text-gray-500">
                       <span className="text-sm">
                         {order.items?.length || 0} item
-                        {(order.items?.length || 0) !== 1 ? 's' : ''}
+                        {(order.items?.length || 0) !== 1 ? "s" : ""}
                       </span>
                       <ChevronDown
                         className={`w-5 h-5 transition-transform ${
@@ -276,7 +277,8 @@ const OrderList = ({
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
                       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800">
-                        <Package size={20} className="text-blue-500" /> Purchased Items
+                        <Package size={20} className="text-blue-500" />{" "}
+                        Purchased Items
                       </h3>
                       {renderOrderItems(order.items)}
                     </div>
@@ -284,20 +286,29 @@ const OrderList = ({
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-800">
-                          <User size={20} className="text-purple-500" /> Customer Details
+                          <User size={20} className="text-purple-500" />{" "}
+                          Customer Details
                         </h3>
                         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
                           <div className="space-y-3 text-sm">
                             <p className="font-medium text-gray-900">
-                              {order.address?.fullName || 'Customer name not available'}
+                              {order.address?.fullName ||
+                                "Customer name not available"}
                             </p>
                             {order.address?.address && (
                               <p className="flex items-start gap-2 text-gray-600">
-                                <MapPin size={16} className="mt-0.5 text-gray-400 flex-shrink-0" />
+                                <MapPin
+                                  size={16}
+                                  className="mt-0.5 text-gray-400 flex-shrink-0"
+                                />
                                 <span>
-                                  {[order.address.address, order.address.city, order.address.postalCode]
+                                  {[
+                                    order.address.address,
+                                    order.address.city,
+                                    order.address.postalCode,
+                                  ]
                                     .filter(Boolean)
-                                    .join(', ')}
+                                    .join(", ")}
                                 </span>
                               </p>
                             )}
@@ -313,13 +324,14 @@ const OrderList = ({
 
                       <div>
                         <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-gray-800">
-                          <Truck size={20} className="text-amber-500" /> Order Actions
+                          <Truck size={20} className="text-amber-500" /> Order
+                          Actions
                         </h3>
                         <div className="flex flex-col sm:flex-row gap-3">
                           {isSeller && (
                             <div className="relative flex-1">
                               <select
-                                value={order.status || 'Order Placed'}
+                                value={order.status || "Order Placed"}
                                 onChange={(e) =>
                                   onStatusChange(order._id, e.target.value)
                                 }
@@ -337,7 +349,10 @@ const OrderList = ({
                                   </option>
                                 ))}
                               </select>
-                              <ChevronDown className="absolute right-3 top-2.5 text-gray-400" size={18} />
+                              <ChevronDown
+                                className="absolute right-3 top-2.5 text-gray-400"
+                                size={18}
+                              />
                             </div>
                           )}
                           <button
@@ -358,10 +373,12 @@ const OrderList = ({
         ) : (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
             <Package size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No orders found</h3>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">
+              No orders found
+            </h3>
             <p className="text-gray-600 mb-4">
-              {startDate || endDate 
-                ? "Try adjusting your date filters" 
+              {startDate || endDate
+                ? "Try adjusting your date filters"
                 : "You don't have any orders yet"}
             </p>
             {(startDate || endDate) && (
@@ -382,17 +399,19 @@ const OrderList = ({
       {/* Invoice Modal */}
       {invoiceOrderId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto relative">
+          <div className="bg-white rounded-lg w-full h-[85vh] mx-4 overflow-auto relative">
             <button
               onClick={() => setInvoiceOrderId(null)}
               className="absolute right-4 top-4 p-2 bg-red-500 rounded-full shadow-lg hover:bg-red-600 transition-colors"
             >
               <X size={20} className="text-white" />
             </button>
-            <Invoice
-              order={orders.find((o) => o._id === invoiceOrderId)}
-              key={invoiceOrderId}
-            />
+            <div className="p-4">
+              <Invoice
+                order={orders.find((o) => o._id === invoiceOrderId)}
+                key={invoiceOrderId}
+              />
+            </div>
           </div>
         </div>
       )}

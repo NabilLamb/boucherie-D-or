@@ -67,7 +67,6 @@ const ProductList = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log(data);
       if (data.success) {
         setSalesStats({
           monthlySales: data.monthlySales,

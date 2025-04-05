@@ -97,21 +97,21 @@ const styles = StyleSheet.create({
 const InvoicePDF = ({ order = {}, companyInfo = COMPANY_INFO }) => {
   const safeOrder = {
     ...order,
-    _id: order._id || 'N/A',
+    _id: order._id || "N/A",
     date: order.date || Date.now(),
     amount: order.amount || 0,
     items: order.items || [],
     address: order.address || {
-      fullName: 'Customer Name Not Available',
-      address: 'Address Not Available',
-      city: '',
-      postalCode: '',
-      phone: ''
-    }
+      fullName: "Customer Name Not Available",
+      address: "Address Not Available",
+      city: "",
+      postalCode: "",
+      phone: "",
+    },
   };
 
   const logoUrl = getAbsoluteUrl(companyInfo.logo);
-  
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -150,7 +150,9 @@ const InvoicePDF = ({ order = {}, companyInfo = COMPANY_INFO }) => {
           <View style={styles.tableHeader}>
             <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Item</Text>
             <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Price</Text>
-            <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Quantity</Text>
+            <Text style={[styles.tableCol, { fontWeight: "bold" }]}>
+              Quantity
+            </Text>
             <Text style={[styles.tableCol, { fontWeight: "bold" }]}>Total</Text>
           </View>
 
@@ -158,7 +160,7 @@ const InvoicePDF = ({ order = {}, companyInfo = COMPANY_INFO }) => {
             const snapshot = item.productSnapshot || {};
             const price = snapshot.offerPrice || snapshot.price || 0;
             const quantity = item.quantity || 0;
-            
+
             return (
               <View key={`item-${index}`} style={styles.tableRow}>
                 <Text style={styles.tableCol}>
@@ -181,14 +183,18 @@ const InvoicePDF = ({ order = {}, companyInfo = COMPANY_INFO }) => {
         </View>
 
         <View style={styles.totalContainer}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
             <Text>Subtotal:</Text>
             <Text>
               {currency}
               {safeOrder.amount.toFixed(2)}
             </Text>
           </View>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
             <Text>Shipping:</Text>
             <Text>{currency}0.00</Text>
           </View>
@@ -235,25 +241,37 @@ const InvoicePDF = ({ order = {}, companyInfo = COMPANY_INFO }) => {
 const Invoice = ({ order }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
+    setIsMobile(/Mobi|Android/i.test(navigator.userAgent));
+    const checkMobile = () => {
+      setIsMobile(
+        window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent)
+      );
+    };
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const handleDownload = async () => {
     if (!order) return;
-    
+
     setIsLoading(true);
     try {
-      const { pdf } = await import('@react-pdf/renderer');
-      const { saveAs } = await import('file-saver');
-      
+      const { pdf } = await import("@react-pdf/renderer");
+      const { saveAs } = await import("file-saver");
+
       const instance = pdf(
         <InvoicePDF order={order} companyInfo={COMPANY_INFO} />
       );
-      
+
       const blob = await instance.toBlob();
-      saveAs(blob, `invoice-${order._id?.toString().slice(-6) || 'unknown'}.pdf`);
+      saveAs(
+        blob,
+        `invoice-${order._id?.toString().slice(-6) || "unknown"}.pdf`
+      );
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     } finally {
@@ -270,24 +288,60 @@ const Invoice = ({ order }) => {
   }
 
   return (
-    <div className="p-6">
-      {isMounted && (
-        <div className="mb-4 print:hidden" style={{ height: "600px" }}>
-          <PDFViewer width="100%" height="100%">
+    <div className="p-6 bg-white shadow-md rounded-lg max-w-6xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Invoice Preview</h2>
+      
+      {isMounted && !isMobile && (
+        <div className="mb-6 print:hidden" style={{ 
+          height: 'calc(100vh - 200px)',
+          minHeight: '600px',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          overflow: 'hidden'
+        }}>
+          <PDFViewer 
+            width="100%" 
+            height="100%"
+            style={{ 
+              border: 'none',
+              borderRadius: '8px'
+            }}
+          >
             <InvoicePDF order={order} companyInfo={COMPANY_INFO} />
           </PDFViewer>
         </div>
       )}
 
-      <button
-        onClick={handleDownload}
-        disabled={isLoading}
-        className={`bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors ${
-          isLoading ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
-      >
-        {isLoading ? 'Generating PDF...' : 'Download PDF'}
-      </button>
+      {isMobile && (
+        <div className="text-center mb-6 p-4 bg-blue-50 rounded-lg">
+          <Package className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+          <p className="text-blue-800 font-medium">
+            For best experience, download the full invoice
+          </p>
+        </div>
+      )}
+
+      <div className="text-center">
+        <button
+          onClick={handleDownload}
+          disabled={isLoading}
+          className={`bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Generating...
+            </span>
+          ) : (
+            'Download PDF Invoice'
+          )}
+        </button>
+      </div>
     </div>
   );
 };
