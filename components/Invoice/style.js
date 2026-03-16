@@ -1,3 +1,5 @@
+// components/Invoice/style.js
+
 import { StyleSheet } from '@react-pdf/renderer';
 
 export const styles = StyleSheet.create({

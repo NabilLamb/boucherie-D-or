@@ -1,3 +1,5 @@
+// context/AppContext.jsx
+
 "use client";
 import { useAuth, useUser } from "@clerk/nextjs";
 import axios from "axios";

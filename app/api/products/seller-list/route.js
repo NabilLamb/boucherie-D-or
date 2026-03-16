@@ -1,3 +1,5 @@
+// app/api/products/seller-list/route.js
+
 import connectDB from "@/config/db"
 import authSeller from "@/lib/authSeller"
 import Product from "@/models/Product"

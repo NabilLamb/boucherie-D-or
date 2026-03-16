@@ -1,3 +1,5 @@
+// app/api/products/cart/route.js
+
 import connectDB from "@/config/db";
 import Product from "@/models/Product";
 

@@ -1,3 +1,5 @@
+// components/Footer.jsx
+
 import Link from "next/link";
 import Image from "next/image";
 import { assets } from "@/assets/assets";

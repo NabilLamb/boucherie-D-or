@@ -1,3 +1,5 @@
+// app/api/categories/[id]/route.js
+
 import connectDB from "@/config/db";
 import Category from "@/models/Category";
 import { getAuth } from "@clerk/nextjs/server";

@@ -1,3 +1,5 @@
+// app/api/user/data/route.js
+
 import connectDB from "@/config/db";
 import User from "@/models/user";
 import { getAuth } from "@clerk/nextjs/server";

@@ -1,4 +1,5 @@
 // app/api/my-liked/create/route.js
+
 import { NextResponse } from "next/server";
 import Wishlist from "@/models/Wishlist";
 import connectDB from "@/config/db";

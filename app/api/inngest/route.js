@@ -1,3 +1,5 @@
+// app/api/inngest/route.js
+
 import { serve } from "inngest/next";
 import { createUserOrder, inngest, syncUserCreation, syncUserDeletion, syncUserUpdation } from "@/config/inngest";
 

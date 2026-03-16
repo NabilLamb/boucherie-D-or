@@ -1,3 +1,5 @@
+// app/seller/liked-list/page.jsx
+
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";

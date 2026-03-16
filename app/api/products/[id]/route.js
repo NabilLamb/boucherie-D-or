@@ -1,3 +1,5 @@
+// app/api/products/[id]/route.js
+
 import { NextResponse } from "next/server";
 import Product from "@/models/Product";
 import { getAuth } from "@clerk/nextjs/server";

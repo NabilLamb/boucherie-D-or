@@ -1,3 +1,5 @@
+// components/SuggestedProductsSection.jsx
+
 "use client";
 import { useState, useMemo } from "react";
 import ProductCard from "@/components/ProductCard";

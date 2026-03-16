@@ -1,3 +1,5 @@
+// app/seller/layout.jsx
+
 "use client";
 import React, { useState } from "react";
 import SideBar from "@/components/seller/Sidebar";

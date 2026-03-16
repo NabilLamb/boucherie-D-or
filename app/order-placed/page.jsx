@@ -1,3 +1,5 @@
+// app/order-placed/page.jsx
+
 'use client'
 import { assets } from '@/assets/assets'
 import { useAppContext } from '@/context/AppContext'

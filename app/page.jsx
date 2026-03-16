@@ -1,3 +1,5 @@
+// app/page.jsx
+
 "use client";
 import HeaderSlider from "@/components/HeaderSlider";
 import HomeProducts from "@/components/HomeProducts";

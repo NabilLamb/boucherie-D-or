@@ -1,3 +1,5 @@
+// components/AboutUs.jsx
+
 import Image from "next/image";
 import { assets } from "@/assets/assets";
 

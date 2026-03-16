@@ -1,3 +1,5 @@
+// components/seller/WishlistStats.jsx
+
 "use client";
 import {
   Chart as ChartJS,

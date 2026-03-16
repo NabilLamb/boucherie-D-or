@@ -1,3 +1,5 @@
+// components/seller/Navbar.jsx
+
 "use client"
 import React from 'react'
 import { assets } from '../../assets/assets'

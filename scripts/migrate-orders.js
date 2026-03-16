@@ -1,3 +1,5 @@
+// scripts/migrate-orders.js
+
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import Order from '../models/Order.js';

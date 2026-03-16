@@ -1,3 +1,5 @@
+// app/api/cart/update/route.js
+
 import { NextResponse } from 'next/server'; // Add this import
 import connectDB from "@/config/db";
 import { getAuth } from "@clerk/nextjs/server";

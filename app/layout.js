@@ -1,3 +1,5 @@
+// app/layout.js
+
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { AppContextProvider } from "@/context/AppContext";

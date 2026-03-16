@@ -1,3 +1,5 @@
+// app/api/my-liked/list/route.js
+
 "use server"
 import connectDB from "@/config/db";
 import Wishlist from "@/models/Wishlist";

@@ -1,3 +1,5 @@
+// app/api/products/sales/route.js
+
 import connectDB from "@/config/db";
 import Order from "@/models/Order";
 import Product from "@/models/Product";

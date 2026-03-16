@@ -1,3 +1,5 @@
+// components/ScrollToTop.jsx
+
 "use client";
 import { useState, useEffect } from "react";
 import { FaArrowUp } from "react-icons/fa";
