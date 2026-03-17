@@ -1,17 +1,10 @@
 // app/api/products/add/route.js
 
-
-
 import { v2 as cloudinary } from "cloudinary";
-
 import { getAuth } from "@clerk/nextjs/server";
-
 import authSeller from "@/lib/authSeller";
-
 import Product from "@/models/Product";
-
 import connectDB from "@/config/db";
-
 import { NextResponse } from "next/server";
 
 

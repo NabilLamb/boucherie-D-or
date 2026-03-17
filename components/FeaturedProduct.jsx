@@ -9,11 +9,13 @@ import { FiShoppingCart, FiInfo, FiStar } from "react-icons/fi";
 import Banner from "./Banner";
 import toast from "react-hot-toast";
 import { useAppContext } from "@/context/AppContext";
+import { useCart } from "@/context/CartContext";
 
 const FeaturedProduct = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart, user } = useAppContext(); // Include user from context
+  const { user } = useAppContext();
+  const { addToCart } = useCart();
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
   const handleAddToCart = (product) => {

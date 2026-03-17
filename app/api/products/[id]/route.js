@@ -12,7 +12,7 @@ import mongoose from "mongoose";
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     const product = await Product.findById(id).populate('category');
 
@@ -53,7 +53,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const formData = await request.formData();
     const category = formData.get("category");
 
@@ -121,7 +121,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ success: false, message: "Seller authorization required" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const product = await Product.findById(id);
 
     if (!product) {

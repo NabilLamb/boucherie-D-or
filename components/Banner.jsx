@@ -6,11 +6,13 @@ import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { useCart } from "@/context/CartContext";
 
 const Banner = () => {
   const [bannerProducts, setBannerProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { addToCart, router, user } = useAppContext(); // Include user from context
+  const { router, user } = useAppContext();
+  const { addToCart } = useCart();
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
   useEffect(() => {

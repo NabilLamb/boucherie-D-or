@@ -1,211 +1,292 @@
 // components/HeaderSlider.jsx
 
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
+import { useCart } from "@/context/CartContext";
 import toast from "react-hot-toast";
 
-const HeaderSlider = () => {
-  const [offers, setOffers] = useState([]);
+// ─── Custom hook: isolates all slider logic ──────────────────────────────────
+const useSlider = (totalSlides, interval = 8000) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { addToCart, router, user } = useAppContext(); // Include user from context
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef(null);
 
+  const goToSlide = useCallback(
+    (index) => {
+      if (isAnimating || index === currentSlide) return;
+      setIsAnimating(true);
+      setCurrentSlide(index);
+      setTimeout(() => setIsAnimating(false), 700);
+    },
+    [isAnimating, currentSlide]
+  );
+
+  const next = useCallback(
+    () => goToSlide((currentSlide + 1) % totalSlides),
+    [currentSlide, totalSlides, goToSlide]
+  );
+
+  const prev = useCallback(
+    () => goToSlide((currentSlide - 1 + totalSlides) % totalSlides),
+    [currentSlide, totalSlides, goToSlide]
+  );
+
+  // Auto-play — resets timer on manual navigation
   useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        const { data } = await axios.get("/api/products/offer");
-        setOffers(data.products);
-      } catch (error) {
-        console.error("Error fetching offers:", error);
-      }
-    };
-    fetchOffers();
-  }, []);
+    if (totalSlides <= 1 || isPaused) return;
+    timerRef.current = setInterval(next, interval);
+    return () => clearInterval(timerRef.current);
+  }, [totalSlides, isPaused, interval, next]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % (offers.length || 1));
-    }, 7000);
-    return () => clearInterval(interval);
-  }, [offers.length]);
+  return { currentSlide, isPaused, setIsPaused, goToSlide, next, prev };
+};
 
-  if (!offers.length)
-    return (
-      <div className="w-full aspect-square max-h-[800px] bg-gray-100 animate-pulse rounded-xl" />
-    );
-
-  const handleAddToCart = (product) => {
-    if (!user) {
-      toast.error("Please login to add to cart");
-      return;
-    }
-    addToCart(product._id);
-  };
+// ─── Memoized slide — only re-renders when it becomes active/inactive ────────
+const Slide = React.memo(({ product, isActive, currency, onAddToCart }) => {
+  const discount = product.offerPrice
+    ? Math.round(((product.price - product.offerPrice) / product.price) * 100)
+    : 0;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl xl:rounded-3xl shadow-xl">
+    <div
+      className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+        isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+      }`}
+      aria-hidden={!isActive}
+    >
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-red-950 via-red-900 to-red-800" />
       <div
-        className="flex transition-transform duration-1000 ease-out"
-        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-      >
-        {offers.map((product) => (
-          <div
-            key={product._id}
-            className="relative flex min-w-full flex-col-reverse md:flex-row items-center justify-between gap-4 md:gap-8 p-4 md:p-8 lg:p-12 xl:p-16 bg-gradient-to-r from-red-900 via-red-800 to-red-900"
-          >
-            {/* Text Content */}
-            <div className="relative z-10 flex-1 flex flex-col items-start space-y-4 md:space-y-6 text-white pb-4 md:pb-0">
-              <span className="rounded-full bg-amber-500/20 px-4 py-2 text-sm font-bold text-amber-400">
-                🎯 Limited Time Offer
-              </span>
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: "radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight max-w-2xl">
-                {product.name}
-              </h1>
-
-              <p className="text-base md:text-xl lg:text-2xl text-red-100/90 max-w-xl">
-                {product.description}
-              </p>
-
-              <div className="flex items-baseline gap-3 md:gap-4 mt-2 md:mt-4">
-                {product.offerPrice ? (
-                  <>
-                    <span className="text-xl md:text-3xl lg:text-4xl font-bold text-amber-400">
-                      ${product.offerPrice}
-                    </span>
-                    <span className="text-lg md:text-xl text-red-200/80 line-through">
-                      ${product.price}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-2xl md:text-3xl font-bold text-white">
-                    ${product.price}
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-8">
-                <Link
-                  href={`/product/${product._id}`}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-2 md:px-8 md:py-3 text-base md:text-lg font-semibold text-red-600 transition-all hover:bg-gray-100 hover:scale-105 hover:shadow-md"
-                >
-                  Discover the Offer
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </Link>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!user) {
-                      toast.error("Please login to add to cart");
-                      return;
-                    }
-                    handleAddToCart(product);
-                    router.push("/cart");
-                  }}
-                  className="inline-block w-fit rounded-full bg-amber-400 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-amber-500 hover:scale-105 hover:shadow-md"
-                >
-                  Shop Now →
-                </button>
-              </div>
-            </div>
-
-            {/* Image Container */}
-            <div className="relative w-full md:w-1/2 aspect-square max-h-[400px] md:max-h-[600px]">
-              <div className="relative w-full h-full overflow-hidden rounded-xl md:rounded-2xl shadow-2xl border-4 border-white/20">
-                <Image
-                  src={product.image[0]}
-                  alt={product.name}
-                  fill
-                  className="object-contain p-4 md:p-8 bg-white/5"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                  placeholder="blur"
-                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkqAcAAIUAgUW0RjgAAAAASUVORK5CYII="
-                />
-              </div>
-            </div>
+      <div className="relative h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-10 lg:px-16 gap-6">
+        {/* Text */}
+        <div className="flex-1 text-white space-y-3 md:space-y-4 pt-6 md:pt-0 max-w-xl">
+          <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 rounded-full px-3 py-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            <span className="text-amber-300 text-xs font-semibold tracking-wide uppercase">
+              Limited Time Offer
+            </span>
           </div>
-        ))}
-      </div>
 
-      {/* Pagination Dots */}
-      {offers.length > 1 && (
-        <div className="absolute bottom-4 md:bottom-6 left-1/2 flex -translate-x-1/2 transform gap-2">
-          {offers.map((_, index) => (
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight">
+            {product.name}
+          </h2>
+
+          {/* Truncated to 2 lines — buttons never shift position */}
+          <p className="text-sm md:text-base text-red-100/80 leading-relaxed line-clamp-2 max-w-md">
+            {product.description}
+          </p>
+
+          <div className="flex items-baseline gap-3">
+            <span className="text-2xl md:text-3xl font-bold text-amber-400">
+              {currency}{(product.offerPrice || product.price).toFixed(2)}
+            </span>
+            {product.offerPrice && (
+              <>
+                <span className="text-lg text-red-300/70 line-through">
+                  {currency}{product.price.toFixed(2)}
+                </span>
+                <span className="bg-green-500/20 border border-green-400/30 text-green-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                  Save {discount}%
+                </span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 pt-1">
             <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-2.5 w-2.5 md:h-3 md:w-3 rounded-full transition-all duration-500 ${
-                index === currentSlide
-                  ? "bg-amber-500 scale-125"
-                  : "bg-white/50 hover:bg-white/80"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
+              onClick={() => onAddToCart(product)}
+              className="bg-amber-500 hover:bg-amber-400 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-amber-500/25 text-sm"
+            >
+              Add to Cart
+            </button>
+            <Link
+              href={`/product/${product._id}`}
+              className="border border-white/30 hover:border-white/60 text-white/80 hover:text-white font-medium px-6 py-2.5 rounded-full transition-all duration-200 text-sm"
+            >
+              View Details
+            </Link>
+          </div>
         </div>
-      )}
 
-      {/* Navigation Arrows */}
+        {/* Image */}
+        <div className="relative flex-shrink-0 w-[220px] h-[220px] md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px] group/img">
+          <div className="absolute inset-4 rounded-full bg-amber-500/10 blur-3xl animate-pulse" />
+          <div className="absolute inset-0 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+            <Image
+              src={product.image[0]}
+              alt={product.name}
+              fill
+              className="object-contain p-4 drop-shadow-2xl transition-transform duration-500 group-hover/img:scale-110"
+              sizes="(max-width: 768px) 220px, 320px"
+              priority={isActive}
+              loading={isActive ? "eager" : "lazy"}
+            />
+          </div>
+          <div className="absolute -top-2 -right-2 bg-green-600 text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-lg border border-white/20">
+            Halal ✓
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+Slide.displayName = "Slide";
+
+// ─── Main component ──────────────────────────────────────────────────────────
+const HeaderSlider = () => {
+  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAppContext();
+  const { addToCart } = useCart();
+  const sliderRef = useRef(null);
+  const currency = process.env.NEXT_PUBLIC_CURRENCY || "€";
+
+  useEffect(() => {
+    axios
+      .get("/api/products/offer")
+      .then(({ data }) => setOffers(data.products || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const { currentSlide, isPaused, setIsPaused, goToSlide, next, prev } =
+    useSlider(offers.length);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const el = sliderRef.current;
+    if (!el) return;
+    const onKey = (e) => {
+      if (e.key === "ArrowLeft") { prev(); e.preventDefault(); }
+      if (e.key === "ArrowRight") { next(); e.preventDefault(); }
+    };
+    el.addEventListener("keydown", onKey);
+    return () => el.removeEventListener("keydown", onKey);
+  }, [next, prev]);
+
+  const handleAddToCart = useCallback(
+    (product) => {
+      if (!user) {
+        toast.error("Please login to add to cart");
+        return;
+      }
+      addToCart(product._id);
+      toast.success(`${product.name} added to cart`);
+    },
+    [user, addToCart]
+  );
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div
+        className="w-full rounded-2xl bg-gradient-to-r from-red-950 to-red-800 animate-pulse"
+        style={{ height: "clamp(400px, 55vh, 560px)" }}
+      />
+    );
+  }
+
+  // Fallback when no offers exist
+  if (!offers.length) {
+    return (
+      <div
+        className="relative w-full overflow-hidden rounded-2xl shadow-2xl"
+        style={{ height: "clamp(400px, 55vh, 560px)" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-red-950 to-red-800" />
+        <div className="relative h-full flex flex-col items-center justify-center text-white px-6 text-center gap-6">
+          <h2 className="text-3xl md:text-4xl font-bold">Premium Halal Butcher</h2>
+          <p className="text-lg text-red-100/80 max-w-md">
+            Fresh cuts, expertly prepared. Free delivery on orders over {currency}50.
+          </p>
+          <Link
+            href="/#products"
+            className="bg-amber-500 hover:bg-amber-400 text-white font-semibold px-8 py-3 rounded-full transition-all hover:scale-105"
+          >
+            Shop Now
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={sliderRef}
+      className="relative w-full overflow-hidden rounded-2xl shadow-2xl group focus:outline-none"
+      style={{ height: "clamp(400px, 55vh, 560px)" }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      tabIndex={0}
+      role="region"
+      aria-label="Promotional offers"
+    >
+      {/* Slides */}
+      {offers.map((product, index) => (
+        <Slide
+          key={product._id}
+          product={product}
+          isActive={index === currentSlide}
+          currency={currency}
+          onAddToCart={handleAddToCart}
+        />
+      ))}
+
+      {/* Arrows — hidden until hover */}
       {offers.length > 1 && (
         <>
           <button
-            onClick={() =>
-              setCurrentSlide(
-                (prev) => (prev - 1 + offers.length) % offers.length
-              )
-            }
-            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
+            onClick={prev}
             aria-label="Previous slide"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/20 hover:bg-white text-white hover:text-red-900 backdrop-blur-md border border-white/10 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
           >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
-            onClick={() =>
-              setCurrentSlide((prev) => (prev + 1) % offers.length)
-            }
-            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
+            onClick={next}
             aria-label="Next slide"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/20 hover:bg-white text-white hover:text-red-900 backdrop-blur-md border border-white/10 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
           >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </>
+      )}
+
+      {/* Dots */}
+      {offers.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {offers.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              aria-current={index === currentSlide ? "true" : "false"}
+              className={`transition-all duration-500 rounded-full ${
+                index === currentSlide
+                  ? "w-8 h-2 bg-amber-400"
+                  : "w-2 h-2 bg-white/30 hover:bg-white/60"
+              }`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
