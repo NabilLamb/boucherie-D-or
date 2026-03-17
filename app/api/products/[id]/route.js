@@ -8,20 +8,26 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import connectDB from "@/config/db";
 import mongoose from "mongoose";
 
-
-//app\api\products\[id]\route.js
+// GET - Single Product with Caching
 export async function GET(request, { params }) {
   try {
     await connectDB();
     const { id } = params;
-    // Do NOT populate the category to keep it as an ObjectId
+
     const product = await Product.findById(id).populate('category');
 
     if (!product) {
       return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, product });
+    return NextResponse.json(
+      { success: true, product },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      }
+    );
   } catch (error) {
     console.error("[PRODUCT_GET_ERROR]", error);
     return NextResponse.json(
@@ -31,11 +37,12 @@ export async function GET(request, { params }) {
   }
 }
 
+// PUT - Update Product (Shared Admin Access)
 export async function PUT(request, { params }) {
   try {
     await connectDB();
 
-    // Authentication
+    // Verify user is a seller
     const { userId } = getAuth(request);
     const isSeller = await authSeller(userId);
 
@@ -48,50 +55,24 @@ export async function PUT(request, { params }) {
 
     const { id } = params;
     const formData = await request.formData();
-
     const category = formData.get("category");
+
     if (!category || !mongoose.Types.ObjectId.isValid(category)) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: "Invalid category ID format",
-          received: category,
-          expected: "Valid MongoDB ObjectId"
-        },
+        { success: false, message: "Invalid category ID format" },
         { status: 400 }
       );
     }
 
-    // Validate existing product
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {
-      return NextResponse.json(
-        { success: false, message: "Product not found" },
-        { status: 404 }
-      );
-    }
-
-    // Authorization check
-    if (existingProduct.userId !== userId) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized product modification" },
-        { status: 403 }
-      );
+      return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
     }
 
     // Process images
     const existingImages = JSON.parse(formData.get('existingImages')) || [];
     const newImages = formData.getAll('image');
 
-    // Validate image count
-    if (existingImages.length + newImages.length > 4) {
-      return NextResponse.json(
-        { success: false, message: "Maximum 4 images allowed" },
-        { status: 400 }
-      );
-    }
-
-    // Upload new images
     const uploadedImages = await Promise.all(
       newImages.filter(file => file.size > 0).map(async (file) => {
         const bytes = await file.arrayBuffer();
@@ -101,7 +82,6 @@ export async function PUT(request, { params }) {
       })
     );
 
-    // Update product data
     const updateData = {
       name: formData.get('name'),
       description: formData.get('description'),
@@ -111,84 +91,49 @@ export async function PUT(request, { params }) {
       image: [...existingImages, ...uploadedImages].slice(0, 4)
     };
 
-    // Handle offer price
     const offerPrice = formData.get('offerPrice');
     updateData.offerPrice = offerPrice ? parseFloat(offerPrice) : null;
 
-    // Validate pricing
-    if (updateData.offerPrice && updateData.offerPrice >= updateData.price) {
-      return NextResponse.json(
-        { success: false, message: "Offer price must be lower than regular price" },
-        { status: 400 }
-      );
-    }
-
-    // Update product
+    // Update the product (Any seller can update any product)
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       updateData,
       { new: true, runValidators: true }
     );
 
-    return NextResponse.json({
-      success: true,
-      product: updatedProduct
-    });
-
+    return NextResponse.json({ success: true, product: updatedProduct });
   } catch (error) {
     console.error("[PRODUCT_PUT_ERROR]", error);
-    return NextResponse.json(
-      { success: false, message: error.message || "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
 
+// DELETE - Remove Product (Shared Admin Access)
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
 
-    // Authentication
+    // Verify user is a seller
     const { userId } = getAuth(request);
     const isSeller = await authSeller(userId);
 
     if (!isSeller) {
-      return NextResponse.json(
-        { success: false, message: "Seller authorization required" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: "Seller authorization required" }, { status: 401 });
     }
 
     const { id } = params;
     const product = await Product.findById(id);
 
     if (!product) {
-      return NextResponse.json(
-        { success: false, message: "Product not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
     }
 
-    // Authorization check
-    if (product.userId !== userId) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized product deletion" },
-        { status: 403 }
-      );
-    }
-
+    // Delete the product (Any seller can delete any product)
     await Product.findByIdAndDelete(id);
 
-    return NextResponse.json({
-      success: true,
-      message: "Product deleted successfully"
-    });
-
+    return NextResponse.json({ success: true, message: "Product deleted successfully" });
   } catch (error) {
     console.error("[PRODUCT_DELETE_ERROR]", error);
-    return NextResponse.json(
-      { success: false, message: error.message || "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

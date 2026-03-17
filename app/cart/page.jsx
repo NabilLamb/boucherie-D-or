@@ -1,34 +1,58 @@
 // app/cart/page.jsx
 
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import OrderSummary from "@/components/OrderSummary";
 import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
+import { useCart } from "@/context/CartContext";
 import { getImageSource } from "@/utils/images";
 import { TruckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-hot-toast";
 
 const Cart = () => {
-  const { cartItems, updateCartQuantity } = useAppContext();
+  const { cartItems, updateCartQuantity } = useCart();
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Local quantity state — decoupled from context to prevent flicker
+  const [localQuantities, setLocalQuantities] = useState({});
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
 
-  const itemIds = useMemo(() => Object.keys(cartItems), [cartItems]);
+  const itemIds = useMemo(
+    () => Object.keys(cartItems || {}).filter((id) => cartItems[id] > 0),
+    [cartItems]
+  );
 
+  // Sync local quantities when cart loads or items change
   useEffect(() => {
-    const loadCartData = async () => {
-      try {
-        if (itemIds.length === 0) {
-          setProducts([]);
-          return;
+    setLocalQuantities((prev) => {
+      const next = { ...prev };
+      itemIds.forEach((id) => {
+        // Only set if not already being edited locally
+        if (next[id] === undefined) {
+          next[id] = cartItems[id];
         }
+      });
+      return next;
+    });
+  }, [itemIds]);
 
+  // Fetch product details for items in cart
+  useEffect(() => {
+    if (itemIds.length === 0) {
+      setProducts([]);
+      setLoading(false);
+      return;
+    }
+
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
         const response = await fetch(
           `/api/products/cart?ids=${itemIds.join(",")}`
         );
@@ -37,7 +61,6 @@ const Cart = () => {
         const missingIds = itemIds.filter(
           (id) => !cartProducts.find((p) => p._id === id)
         );
-
         if (missingIds.length > 0) {
           missingIds.forEach((id) => updateCartQuantity(id, 0));
           toast.error("Some items are unavailable and were removed.");
@@ -51,21 +74,42 @@ const Cart = () => {
       }
     };
 
-    loadCartData();
-  }, [itemIds, updateCartQuantity]);
+    fetchProducts();
+    // Only re-fetch when the list of item IDs changes, not on every quantity update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(itemIds)]);
 
-  const handleQuantityChange = (productId, newQuantity) => {
-    const product = products.find((p) => p._id === productId);
-    if (!product) return;
+  const handleQuantityChange = useCallback(
+    (productId, newQuantity) => {
+      const product = products.find((p) => p._id === productId);
+      if (!product) return;
 
-    const minQty = ["kg", "liter"].includes(product.unit) ? 0.1 : 1;
-    const roundedQty = Math.round(newQuantity * 10) / 10;
-    updateCartQuantity(productId, Math.max(minQty, roundedQty));
-  };
+      const isWeight = ["kg", "liter"].includes(product.unit);
+      const minQty = isWeight ? 0.1 : 1;
+      const rounded = Math.round(newQuantity * 10) / 10;
+      const final = Math.max(minQty, rounded);
 
-  const validCartItems = Object.keys(cartItems).filter((itemId) => {
-    return products.find((p) => p._id === itemId) && cartItems[itemId] > 0;
-  });
+      // Update local state immediately — no flicker
+      setLocalQuantities((prev) => ({ ...prev, [productId]: final }));
+      // Update context (debounced API sync happens inside CartContext)
+      updateCartQuantity(productId, final);
+    },
+    [products, updateCartQuantity]
+  );
+
+  const handleRemove = useCallback(
+    (itemId) => {
+      setLocalQuantities((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
+      updateCartQuantity(itemId, 0);
+    },
+    [updateCartQuantity]
+  );
+
+  const validCartItems = itemIds.filter((id) => products.find((p) => p._id === id));
 
   if (loading) return <Loading />;
   if (error)
@@ -82,7 +126,7 @@ const Cart = () => {
             </h1>
             <p className="text-lg text-gray-600">
               {validCartItems.length}{" "}
-              {validCartItems.length === 1 ? "Cut" : "Products"}
+              {validCartItems.length === 1 ? "Product" : "Products"}
             </p>
           </div>
 
@@ -98,18 +142,19 @@ const Cart = () => {
                   className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                  Select Premium Products
+                  Browse Products
                 </Link>
               </div>
             </div>
           ) : (
             <>
+              {/* Desktop table */}
               <div className="hidden md:block">
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="py-4 px-6 text-left text-gray-600 font-medium">
-                        Cut
+                        Product
                       </th>
                       <th className="py-4 px-6 text-center text-gray-600 font-medium">
                         Price
@@ -134,6 +179,7 @@ const Cart = () => {
                       const minQty = isWeight ? 0.1 : 1;
                       const step = isWeight ? 0.1 : 1;
                       const price = product.offerPrice || product.price;
+                      const qty = localQuantities[itemId] ?? cartItems[itemId];
 
                       return (
                         <tr
@@ -142,10 +188,7 @@ const Cart = () => {
                         >
                           <td className="py-6 px-6">
                             <div className="flex items-center gap-4">
-                              <Link
-                                href={`/product/${product._id}`}
-                                className="shrink-0"
-                              >
+                              <Link href={`/product/${product._id}`} className="shrink-0">
                                 <div className="w-20 h-20 bg-gray-100 rounded-lg p-2">
                                   <Image
                                     src={getImageSource(product.image[0])}
@@ -164,7 +207,7 @@ const Cart = () => {
                                   {product.name}
                                 </Link>
                                 <button
-                                  onClick={() => updateCartQuantity(itemId, 0)}
+                                  onClick={() => handleRemove(itemId)}
                                   className="block mt-1 text-sm text-red-600 hover:text-red-700"
                                 >
                                   Remove
@@ -173,44 +216,37 @@ const Cart = () => {
                             </div>
                           </td>
                           <td className="py-6 px-6 text-center text-gray-700">
-                            {currency}
-                            {price.toFixed(2)}
+                            {currency}{price.toFixed(2)}
                           </td>
                           <td className="py-6 px-6 text-center">
                             <div className="flex items-center justify-center gap-1">
                               <button
                                 onClick={() =>
-                                  handleQuantityChange(
-                                    itemId,
-                                    cartItems[itemId] - step
-                                  )
+                                  handleQuantityChange(itemId, qty - step)
                                 }
-                                disabled={cartItems[itemId] <= minQty}
-                                className="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+                                disabled={qty <= minQty}
+                                className="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition-colors"
                               >
                                 −
                               </button>
                               <input
                                 type="number"
-                                value={cartItems[itemId]}
+                                value={qty}
                                 min={minQty}
                                 step={step}
                                 onChange={(e) =>
                                   handleQuantityChange(
                                     itemId,
-                                    parseFloat(e.target.value)
+                                    parseFloat(e.target.value) || minQty
                                   )
                                 }
                                 className="w-20 h-8 border border-gray-300 rounded-lg text-center"
                               />
                               <button
                                 onClick={() =>
-                                  handleQuantityChange(
-                                    itemId,
-                                    cartItems[itemId] + step
-                                  )
+                                  handleQuantityChange(itemId, qty + step)
                                 }
-                                className="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100"
+                                className="w-8 h-8 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors"
                               >
                                 +
                               </button>
@@ -220,8 +256,7 @@ const Cart = () => {
                             {product.unit}
                           </td>
                           <td className="py-6 px-6 text-right text-gray-700 font-medium">
-                            {currency}
-                            {(price * cartItems[itemId]).toFixed(2)}
+                            {currency}{(price * qty).toFixed(2)}
                           </td>
                         </tr>
                       );
@@ -230,6 +265,7 @@ const Cart = () => {
                 </table>
               </div>
 
+              {/* Mobile cards */}
               <div className="md:hidden space-y-4">
                 {validCartItems.map((itemId) => {
                   const product = products.find((p) => p._id === itemId);
@@ -239,6 +275,7 @@ const Cart = () => {
                   const minQty = isWeight ? 0.1 : 1;
                   const step = isWeight ? 0.1 : 1;
                   const price = product.offerPrice || product.price;
+                  const qty = localQuantities[itemId] ?? cartItems[itemId];
 
                   return (
                     <div
@@ -246,10 +283,7 @@ const Cart = () => {
                       className="bg-white p-4 rounded-lg border border-gray-100"
                     >
                       <div className="flex gap-4">
-                        <Link
-                          href={`/product/${product._id}`}
-                          className="shrink-0"
-                        >
+                        <Link href={`/product/${product._id}`} className="shrink-0">
                           <div className="w-16 h-16 bg-gray-100 rounded-lg p-2">
                             <Image
                               src={getImageSource(product.image[0])}
@@ -268,42 +302,35 @@ const Cart = () => {
                             {product.name}
                           </Link>
                           <div className="mt-1 text-sm text-gray-600">
-                            {currency}
-                            {price.toFixed(2)} / {product.unit}
+                            {currency}{price.toFixed(2)} / {product.unit}
                           </div>
                           <div className="mt-2 flex items-center justify-between">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() =>
-                                  handleQuantityChange(
-                                    itemId,
-                                    cartItems[itemId] - step
-                                  )
+                                  handleQuantityChange(itemId, qty - step)
                                 }
-                                disabled={cartItems[itemId] <= minQty}
+                                disabled={qty <= minQty}
                                 className="w-8 h-8 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
                               >
                                 −
                               </button>
                               <input
                                 type="number"
-                                value={cartItems[itemId]}
+                                value={qty}
                                 min={minQty}
                                 step={step}
                                 onChange={(e) =>
                                   handleQuantityChange(
                                     itemId,
-                                    parseFloat(e.target.value)
+                                    parseFloat(e.target.value) || minQty
                                   )
                                 }
                                 className="w-16 h-8 border border-gray-300 rounded text-center"
                               />
                               <button
                                 onClick={() =>
-                                  handleQuantityChange(
-                                    itemId,
-                                    cartItems[itemId] + step
-                                  )
+                                  handleQuantityChange(itemId, qty + step)
                                 }
                                 className="w-8 h-8 rounded border border-gray-300 hover:bg-gray-100"
                               >
@@ -311,7 +338,7 @@ const Cart = () => {
                               </button>
                             </div>
                             <button
-                              onClick={() => updateCartQuantity(itemId, 0)}
+                              onClick={() => handleRemove(itemId)}
                               className="text-sm text-red-600 hover:text-red-700"
                             >
                               Remove
@@ -329,7 +356,7 @@ const Cart = () => {
                 className="inline-flex items-center mt-8 gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
-                Continue Selecting Products
+                Continue Shopping
               </Link>
             </>
           )}

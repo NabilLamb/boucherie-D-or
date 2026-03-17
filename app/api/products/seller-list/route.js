@@ -5,7 +5,7 @@ import authSeller from "@/lib/authSeller"
 import Product from "@/models/Product"
 import { getAuth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
-
+import Category from "@/models/Category";
 
 export async function GET(request) {
     try {

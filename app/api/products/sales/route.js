@@ -5,6 +5,7 @@ import Order from "@/models/Order";
 import Product from "@/models/Product";
 import authSeller from "@/lib/authSeller";
 import { getAuth } from "@clerk/nextjs/server";
+import Category from "@/models/Category";
 
 export const GET = async (req) => {
     const { userId } = getAuth(req);

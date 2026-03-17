@@ -1,19 +1,37 @@
 // context/AppContext.jsx
 
 "use client";
+
 import { useAuth, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
+import { CartProvider } from "./CartContext";
+import { WishlistProvider } from "./WishlistContext";
 
-export const AppContext = createContext();
+export const AppContext = createContext(null);
 
 export const useAppContext = () => {
-  return useContext(AppContext);
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error("useAppContext must be used inside AppContextProvider");
+  return ctx;
 };
 
-export const AppContextProvider = (props) => {
+/**
+ * AppContextProvider
+ * This is the main provider that handles global state:
+ * - Products fetching (with single-fetch logic)
+ * - User metadata/role sync
+ * - Cart and Wishlist provider nesting
+ */
+export const AppContextProvider = ({ children }) => {
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
   const router = useRouter();
 
@@ -21,194 +39,88 @@ export const AppContextProvider = (props) => {
   const { getToken } = useAuth();
 
   const [products, setProducts] = useState([]);
-  const [userData, setUserData] = useState(false);
+  const [userData, setUserData] = useState(null);
   const [isSeller, setIsSeller] = useState(false);
-  const [cartItems, setCartItems] = useState({});
-  const [wishlist, setWishlist] = useState([]);
-  const [isWishlistLoading, setIsWishlistLoading] = useState(true);
-  
 
-  // Memoize fetchProducts
+  // Optimized Fetch Products: Only fetches if the products array is empty
   const fetchProducts = useCallback(async () => {
+    if (products.length > 0) return; // FIX: Prevent re-fetching if data exists
+
     try {
       const { data } = await axios.get("/api/products");
       if (data.products) {
-        setProducts((prev) => {
-          const prevIds = prev.map(p => p._id).sort();
-          const newIds = data.products.map(p => p._id).sort();
-          if (JSON.stringify(prevIds) === JSON.stringify(newIds)) {
-            return prev; // Avoid re-render if products are the same
-          }
-          return data.products;
-        });
+        setProducts(data.products);
       }
     } catch (error) {
-      console.error("Failed to fetch products:", error);
-      toast.error("Failed to load products");
-    }
-  }, []);
-
-    // Memoize fetchUserData
-    const fetchUserData = useCallback(async () => {
-      try {
-        if (user?.publicMetadata?.role === "seller") {
-          setIsSeller(true);
+      console.error("[PRODUCTS_FETCH_ERROR]", error.message);
+      
+      // Retry once after 2 seconds handles occasional cold-start issues
+      setTimeout(async () => {
+        try {
+          const { data } = await axios.get("/api/products");
+          if (data.products) setProducts(data.products);
+        } catch (retryError) {
+          console.error("[PRODUCTS_FETCH_RETRY_FAILED]", retryError.message);
         }
-        const token = await getToken();
-  
-        const { data } = await axios.get("/api/user/data", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-  
-        if (data.success) {
-          setUserData(data.user);
-          setCartItems(data.user.cartItems);
-        } else {
-          toast.error(data.message);
-        }
-      } catch (error) {
-        console.error("fetchUserData error:", error);
-        toast.error(error.message);
-      }
-    }, [user, getToken]);
-  
-    useEffect(() => {
-      if (isLoaded) {
-        fetchProducts();
-        if (user) {
-          fetchUserData();
-        }
-      }
-    }, [isLoaded, user, fetchProducts, fetchUserData]);
-
-  
-
-  const addToCart = async (itemId) => {
-    let cartData = structuredClone(cartItems);
-    if (cartData[itemId]) {
-      cartData[itemId] += 1;
-    } else {
-      cartData[itemId] = 1;
+      }, 2000);
     }
-    setCartItems(cartData);
-    if (user) {
-      try {
-        const token = await getToken();
-        await axios.post(
-          "/api/cart/update",
-          { cartData },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        toast.success("Item added to cart");
-      } catch (error) {
-        toast.error(error.message);
-      }
-    }
-  };
+  }, [products.length]); // Dependency on length ensures we can check if empty
 
-  const updateCartQuantity = async (itemId, quantity) => {
-    let cartData = structuredClone(cartItems);
-    if (quantity === 0) {
-      delete cartData[itemId];
-    } else {
-      cartData[itemId] = quantity;
-    }
-    setCartItems(cartData);
-    if (user) {
-      try {
-        const token = await getToken();
-        await axios.post(
-          "/api/cart/update",
-          { cartData },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        // toast.success('Cart Updated')
-      } catch (error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
-  const getCartCount = () => {
-    return Object.keys(cartItems).filter((itemId) => cartItems[itemId] > 0)
-      .length;
-  };
-
-  const getCartAmount = () => {
-    let totalAmount = 0;
-    for (const itemId in cartItems) {
-      const product = products.find((p) => p._id === itemId);
-      if (product && cartItems[itemId] > 0) {
-        const price = product.offerPrice || product.price;
-        totalAmount += price * cartItems[itemId];
-      }
-    }
-    return totalAmount;
-  };
-
-
-  useEffect(() => {
-    if (isLoaded && user) {
-      fetchUserData();
-    }
-  }, [isLoaded, user]);
-
-  useEffect(() => {
-    const initializeWishlist = async () => {
-      if (user) {
-        await fetchWishlist();
-      }
-    };
-    initializeWishlist();
-  }, []);
-
-  const fetchWishlist = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
-      if (user) {
-        const { data } = await axios.get("/api/my-liked/list");
-        setWishlist(data.wishlist);
+      if (user?.publicMetadata?.role === "seller") {
+        setIsSeller(true);
+      }
+
+      const token = await getToken();
+      const { data } = await axios.get("/api/user/data", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        setUserData(data.user);
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
-      console.error("Failed to fetch wishlist:", error);
-    } finally {
-      setIsWishlistLoading(false);
+      console.error("[USER_DATA_ERROR]", error.message);
     }
-  };
+  }, [user, getToken]);
 
+  // Sync state on load and when user changes
   useEffect(() => {
-    if (user) {
-      fetchWishlist();
-    } else {
-      setWishlist([]);
-      setIsWishlistLoading(false);
+    if (isLoaded) {
+      fetchProducts();
+      if (user) {
+        fetchUserData();
+      }
     }
-  }, [user]);
+  }, [isLoaded, user, fetchProducts, fetchUserData]);
 
   const value = {
+    // Auth
     user,
     getToken,
-    currency,
-    router,
-    isSeller,
-    setIsSeller,
     userData,
     fetchUserData,
+    // Seller
+    isSeller,
+    setIsSeller,
+    // Products
     products,
     fetchProducts,
-    cartItems,
-    setCartItems,
-    addToCart,
-    updateCartQuantity,
-    getCartCount,
-    getCartAmount,
-    wishlist,
-    isWishlistLoading,
-    updateWishlist: setWishlist,
-    fetchWishlist,
-
+    // Utils
+    currency,
+    router,
   };
 
   return (
-    <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
+    <AppContext.Provider value={value}>
+      <CartProvider products={products}>
+        <WishlistProvider>
+          {children}
+        </WishlistProvider>
+      </CartProvider>
+    </AppContext.Provider>
   );
 };

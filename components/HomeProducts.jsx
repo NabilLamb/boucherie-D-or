@@ -1,6 +1,8 @@
-// HomeProducts.jsx
+// components/HomeProducts.jsx
+
 "use client";
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import CategorySidebar from "./CategorySidebar";
 import axios from "axios";
@@ -19,79 +21,95 @@ const HomeProducts = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [regularProducts, setRegularProducts] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
   const [categories, setCategories] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Debounced search — wait 400ms after user stops typing before fetching
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [productsRes, categoriesRes] = await Promise.all([
-          axios.get("/api/products?limit=1000"),
-          axios.get("/api/categories"),
-        ]);
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-        // Sort products by createdAt date (newest first)
-        const sortedProducts = (productsRes.data.products || []).sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-
-        setRegularProducts(sortedProducts);
-        setCategories(categoriesRes.data || []);
-      } catch (error) {
-        toast.error(error.response?.data?.error || "Failed to load products");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+  // Fetch categories once on mount
+  useEffect(() => {
+    axios
+      .get("/api/categories")
+      .then(({ data }) => setCategories(data || []))
+      .catch(() => toast.error("Failed to load categories"));
   }, []);
 
-  const filteredProducts = regularProducts.filter((product) => {
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = [
-      product.name,
-      product.description,
-      product.category?.name,
-    ].some((field) => field?.toLowerCase().includes(searchLower));
-    const matchesCategory =
-      !selectedCategory || product.category?._id === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Fetch products whenever page, category, or search changes
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(ITEMS_PER_PAGE),
+      });
+
+      if (selectedCategory) params.set("category", selectedCategory);
+      if (debouncedSearch) params.set("search", debouncedSearch);
+
+      const { data } = await axios.get(`/api/products?${params.toString()}`);
+      setProducts(data.products || []);
+      setPagination(data.pagination || { total: 0, totalPages: 1 });
+    } catch (error) {
+      toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, selectedCategory, debouncedSearch]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Reset to page 1 when filters change
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
 
   const handlePageChange = (newPage) => {
-    setCurrentPage(Math.max(1, Math.min(newPage, totalPages)));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setCurrentPage(newPage);
+    const section = document.getElementById("products");
+    if (section) {
+      const offset = section.getBoundingClientRect().top + window.pageYOffset - 100;
+      window.scrollTo({ top: offset, behavior: "smooth" });
+    }
   };
 
   return (
     <div id="products" className="min-h-screen bg-gray-50 pt-12 pb-16">
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Section Header */}
+        {/* Section header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Our Products
           </h2>
           <p className="mt-4 text-gray-600 max-w-3xl mx-auto">
             Discover our wide range of high-quality products, sourced from the
-            finest suppliers. Whether you're looking for premium cuts of meat,
-            gourmet sausages, or specialty items, we have something for every
-            palate. Explore our selection and find the perfect ingredients for
-            your next meal.
+            finest suppliers.
           </p>
           <div className="w-32 h-1.5 bg-amber-600 mx-auto rounded-full mt-6" />
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Mobile Filter Button */}
+          {/* Mobile filter button */}
           <button
             onClick={() => setSidebarOpen(true)}
             className="md:hidden flex items-center justify-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-md transition-colors"
@@ -100,19 +118,19 @@ const HomeProducts = () => {
             <span>Filter Products</span>
           </button>
 
-          {/* Category Sidebar */}
+          {/* Sidebar */}
           <CategorySidebar
             categories={categories}
             selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
+            setSelectedCategory={handleCategoryChange}
             setCurrentPage={setCurrentPage}
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
           />
 
-          {/* Main Content */}
+          {/* Main content */}
           <div className="flex-1">
-            {/* Search Bar */}
+            {/* Search */}
             <div className="mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
               <div className="relative">
                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400">
@@ -120,57 +138,50 @@ const HomeProducts = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search our Products (e.g., ribeye, tenderloin, sausage)..."
+                  placeholder="Search products..."
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border-0 rounded-xl bg-gray-50 focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all placeholder-gray-400"
                 />
               </div>
             </div>
 
-            {/* Results Count */}
+            {/* Results count */}
             <div className="mb-6 flex justify-between items-center">
               <p className="text-sm text-gray-600">
-                Showing {paginatedProducts.length} of {filteredProducts.length}{" "}
-                Products
+                {loading
+                  ? "Loading..."
+                  : `Showing ${products.length} of ${pagination.total} products`}
               </p>
               {selectedCategory && (
                 <button
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() => handleCategoryChange(null)}
                   className="text-sm text-amber-600 hover:text-amber-700 font-medium"
                 >
-                  Clear filters
+                  Clear filter
                 </button>
               )}
             </div>
 
-            {/* Content */}
+            {/* Product grid */}
             {loading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                {[...Array(8)].map((_, i) => (
+                {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
                   <div
                     key={i}
                     className="bg-white rounded-xl shadow-sm h-[360px] animate-pulse"
                   />
                 ))}
               </div>
-            ) : paginatedProducts.length === 0 ? (
+            ) : products.length === 0 ? (
               <div className="text-center p-12 bg-white rounded-2xl border border-gray-200">
                 <div className="text-2xl text-gray-500 mb-4">
-                  🍖 No Products Found
+                  No products found
                 </div>
-                <p className="text-gray-500 mb-6">
-                  {searchQuery
-                    ? "Try different search terms"
-                    : "Please check back later"}
-                </p>
                 <button
                   onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory(null);
+                    handleSearchChange("");
+                    handleCategoryChange(null);
                   }}
                   className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
@@ -180,17 +191,16 @@ const HomeProducts = () => {
             ) : (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                  {paginatedProducts.map((product) => (
+                  {products.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
                 </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
+                {pagination.totalPages > 1 && (
                   <div className="mt-12 flex justify-center">
                     <PaginationControls
                       currentPage={currentPage}
-                      totalPages={totalPages}
+                      totalPages={pagination.totalPages}
                       handlePageChange={handlePageChange}
                     />
                   </div>
@@ -205,68 +215,48 @@ const HomeProducts = () => {
 };
 
 const PaginationControls = ({ currentPage, totalPages, handlePageChange }) => {
-  const maxVisiblePages = 5;
-  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-  if (endPage - startPage + 1 < maxVisiblePages) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1);
-  }
+  const maxVisible = 5;
+  let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let end = Math.min(totalPages, start + maxVisible - 1);
+  if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
 
   return (
-    <nav className="flex items-center gap-1">
+    <nav className="flex items-center gap-1" aria-label="Pagination">
       <button
         onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
+        disabled={!currentPage > 1}
         className="p-2 rounded-lg disabled:opacity-30 hover:bg-gray-100 transition-colors"
         aria-label="Previous page"
       >
         <FiChevronLeft className="w-5 h-5" />
       </button>
 
-      {startPage > 1 && (
+      {start > 1 && (
         <>
-          <button
-            onClick={() => handlePageChange(1)}
-            className={`px-3 py-1 rounded-lg text-sm font-medium ${
-              1 === currentPage
-                ? "bg-amber-600 text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            1
-          </button>
-          {startPage > 2 && <span className="px-1">...</span>}
+          <PageButton page={1} current={currentPage} onClick={handlePageChange} />
+          {start > 2 && <span className="px-1 text-gray-400">...</span>}
         </>
       )}
 
-      {Array.from({ length: endPage - startPage + 1 }, (_, i) => (
-        <button
-          key={startPage + i}
-          onClick={() => handlePageChange(startPage + i)}
-          className={`px-3 py-1 rounded-lg text-sm font-medium ${
-            startPage + i === currentPage
-              ? "bg-amber-600 text-white"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          {startPage + i}
-        </button>
-      ))}
+      {Array.from({ length: end - start + 1 }, (_, i) => start + i).map(
+        (page) => (
+          <PageButton
+            key={page}
+            page={page}
+            current={currentPage}
+            onClick={handlePageChange}
+          />
+        )
+      )}
 
-      {endPage < totalPages && (
+      {end < totalPages && (
         <>
-          {endPage < totalPages - 1 && <span className="px-1">...</span>}
-          <button
-            onClick={() => handlePageChange(totalPages)}
-            className={`px-3 py-1 rounded-lg text-sm font-medium ${
-              totalPages === currentPage
-                ? "bg-amber-600 text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {totalPages}
-          </button>
+          {end < totalPages - 1 && <span className="px-1 text-gray-400">...</span>}
+          <PageButton
+            page={totalPages}
+            current={currentPage}
+            onClick={handlePageChange}
+          />
         </>
       )}
 
@@ -281,5 +271,17 @@ const PaginationControls = ({ currentPage, totalPages, handlePageChange }) => {
     </nav>
   );
 };
+
+const PageButton = ({ page, current, onClick }) => (
+  <button
+    onClick={() => onClick(page)}
+    className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${page === current
+        ? "bg-amber-600 text-white"
+        : "text-gray-600 hover:bg-gray-100"
+      }`}
+  >
+    {page}
+  </button>
+);
 
 export default HomeProducts;

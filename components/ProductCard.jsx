@@ -1,33 +1,27 @@
 // components/ProductCard.jsx
 
 "use client";
-import React, { useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { assets } from "@/assets/assets";
 import { getImageSource } from "@/utils/images";
-import axios from "axios";
 import toast from "react-hot-toast";
 import { FiHeart, FiShoppingCart } from "react-icons/fi";
 
 const ProductCard = ({ product }) => {
-  const {
-    currency,
-    addToCart,
-    user,
-    wishlist,
-    updateWishlist,
-    fetchWishlist,
-    getToken,
-  } = useAppContext();
-  const [isLiked, setIsLiked] = React.useState(false);
-  const [isProcessing, setIsProcessing] = React.useState(false);
-  const [imageLoaded, setImageLoaded] = React.useState(false);
+  const { currency, user } = useAppContext();
+  const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
-  useEffect(() => {
-    setIsLiked(wishlist.some((item) => item.product._id === product._id));
-  }, [wishlist, product._id]);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const liked = isInWishlist(product._id);
 
   const handleWishlist = async (e) => {
     e.preventDefault();
@@ -37,32 +31,13 @@ const ProductCard = ({ product }) => {
       return;
     }
     if (isProcessing) return;
-
     setIsProcessing(true);
-    const originalWishlist = [...wishlist];
-    const newState = !isLiked;
-
     try {
-      const tempWishlist = newState
-        ? [
-            ...wishlist.filter((item) => item.product._id !== product._id),
-            { product },
-          ]
-        : wishlist.filter((item) => item.product._id !== product._id);
-      updateWishlist(tempWishlist);
-
-      await axios.post(
-        newState ? "/api/my-liked/create" : "/api/my-liked/delete",
-        { userId: user.id, productId: product._id },
-        { headers: { Authorization: `Bearer ${await getToken()}` } }
-      );
-      await fetchWishlist();
-      toast.success(newState ? "Added to favorites" : "Removed from favorites");
-    } catch (error) {
-      updateWishlist(originalWishlist);
-      toast.error(
-        error.response?.data?.message || "Failed to update favorites"
-      );
+      if (liked) {
+        await removeFromWishlist(product._id);
+      } else {
+        await addToWishlist(product);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -73,10 +48,10 @@ const ProductCard = ({ product }) => {
       e.preventDefault();
       e.stopPropagation();
       toast.error("Please login to add to cart");
-      return false;
+      return;
     }
     addToCart(product._id);
-    return true;
+    toast.success(`${product.name} added to cart`);
   };
 
   return (
@@ -85,12 +60,10 @@ const ProductCard = ({ product }) => {
         href={`/product/${product._id}`}
         className="flex flex-col flex-grow"
         onClick={(e) => {
-          if (!user) {
-            e.preventDefault();
-          }
+          if (!user) e.preventDefault();
         }}
       >
-        {/* Image Section */}
+        {/* Image */}
         <div className="relative aspect-[4/3] bg-gray-100">
           {!imageLoaded && (
             <div className="absolute inset-0 bg-gray-200 animate-pulse" />
@@ -106,23 +79,23 @@ const ProductCard = ({ product }) => {
             priority={false}
           />
 
-          {/* Wishlist Button */}
+          {/* Wishlist button */}
           <button
             onClick={handleWishlist}
-            className="absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm bg-white/80 hover:bg-white transition-colors shadow-sm z-10"
             disabled={isProcessing}
-            aria-label={isLiked ? "Remove from favorites" : "Add to favorites"}
+            aria-label={liked ? "Remove from favorites" : "Add to favorites"}
+            className="absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm bg-white/80 hover:bg-white transition-colors shadow-sm z-10"
           >
             <FiHeart
               className={`w-5 h-5 transition-colors ${
-                isLiked ? "fill-red-500 text-red-500" : "text-gray-400"
+                liked ? "fill-red-500 text-red-500" : "text-gray-400"
               }`}
             />
           </button>
 
-          {/* Discount Badge */}
+          {/* Discount badge */}
           {product.offerPrice && (
-            <div className="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold">
+            <div className="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 rounded-md text-[10px] font-bold">
               SAVE{" "}
               {Math.round(
                 ((product.price - product.offerPrice) / product.price) * 100
@@ -132,23 +105,22 @@ const ProductCard = ({ product }) => {
           )}
         </div>
 
-        {/* Product Info */}
+        {/* Info */}
         <div className="p-4 flex flex-col flex-grow">
           <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
             <span className="truncate capitalize">{product.category?.name}</span>
             <span className="font-medium">{product.unit}</span>
           </div>
-
-          <h3 className="font-bold text-gray-900 text-sm sm:text-base mb-2 break-words leading-tight">
+          <h3 className="font-bold text-gray-900 text-sm sm:text-base mb-2 leading-tight line-clamp-2">
             {product.name}
           </h3>
-
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-4 flex-grow">
             {product.description}
           </p>
         </div>
       </Link>
 
+      {/* Price + Add to cart */}
       <div className="p-4 pt-0 flex items-center justify-between">
         <div className="flex flex-col">
           <span className="text-base sm:text-lg font-bold text-amber-700 whitespace-nowrap">
@@ -165,8 +137,8 @@ const ProductCard = ({ product }) => {
 
         <button
           onClick={handleAddToCart}
-          className="flex items-center gap-1 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
           aria-label={`Add ${product.name} to cart`}
+          className="flex items-center gap-1 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
         >
           <FiShoppingCart className="w-4 h-4" />
           <span className="hidden sm:inline">Add</span>

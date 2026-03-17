@@ -1,6 +1,8 @@
 // components/seller/WishlistStats.jsx
 
 "use client";
+
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,62 +27,66 @@ ChartJS.register(
   Legend
 );
 
-const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+// Fixed palette — stable across renders, no hydration mismatch
+const LINE_COLORS = [
+  "#3B82F6", "#10B981", "#F59E0B", "#EF4444",
+  "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16",
+  "#F97316", "#6366F1",
+];
 
 const WishlistStats = ({ stats, type }) => {
   if (!stats || !stats.length) {
-    return <div className="text-gray-500 text-center py-8">No wishlist data available</div>;
+    return (
+      <div className="text-gray-500 text-center py-8">
+        No wishlist data available
+      </div>
+    );
   }
 
-  // Helper function to process data
   const processChartData = () => {
-    const trendData = {};
-    const productData = {};
+    const trendMap = {};
+    const productMap = {};
 
     stats.forEach((entry) => {
-      const productKey = entry.product.id;
-      if (!productKey) return; // Skip if no product ID
+      const key = entry.product.id;
+      if (!key) return;
 
-      // For monthly trend chart
-      if (!trendData[productKey]) {
-        trendData[productKey] = {
+      if (!trendMap[key]) {
+        trendMap[key] = {
           label: entry.product.name,
           data: Array(12).fill(0),
-          // random color for each product line
-          borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
           tension: 0.3,
         };
       }
-      // Increment the corresponding month’s likes
-      trendData[productKey].data[entry.month - 1] += entry.totalLikes;
+      trendMap[key].data[entry.month - 1] += entry.totalLikes;
 
-      // For total likes per product (used in top products chart)
-      if (!productData[productKey]) {
-        productData[productKey] = {
-          ...entry.product,
-          totalLikes: 0,
-        };
+      if (!productMap[key]) {
+        productMap[key] = { ...entry.product, totalLikes: 0 };
       }
-      productData[productKey].totalLikes += entry.totalLikes;
+      productMap[key].totalLikes += entry.totalLikes;
     });
 
-    return {
-      trendData: Object.values(trendData),
-      productData: Object.values(productData),
-    };
+    // Assign stable colors from the fixed palette
+    const trendData = Object.values(trendMap).map((dataset, index) => ({
+      ...dataset,
+      borderColor: LINE_COLORS[index % LINE_COLORS.length],
+    }));
+
+    return { trendData, productData: Object.values(productMap) };
   };
 
   const { trendData, productData } = processChartData();
 
-  // RENDER LINE CHART (Monthly Trend)
   if (type === "trend") {
     return (
       <div className="relative h-80">
         <Line
-          data={{
-            labels: monthNames,
-            datasets: trendData,
-          }}
+          data={{ labels: MONTH_NAMES, datasets: trendData }}
           options={{
             responsive: true,
             maintainAspectRatio: false,
@@ -89,9 +95,7 @@ const WishlistStats = ({ stats, type }) => {
                 beginAtZero: true,
                 title: { display: true, text: "Number of Likes" },
               },
-              x: {
-                title: { display: true, text: "Month" },
-              },
+              x: { title: { display: true, text: "Month" } },
             },
           }}
         />
@@ -99,9 +103,8 @@ const WishlistStats = ({ stats, type }) => {
     );
   }
 
-  // RENDER BAR CHART (Top Products)
   if (type === "top") {
-    const topProducts = [...productData]
+    const top = [...productData]
       .sort((a, b) => b.totalLikes - a.totalLikes)
       .slice(0, 10);
 
@@ -109,11 +112,11 @@ const WishlistStats = ({ stats, type }) => {
       <div className="relative h-80">
         <Bar
           data={{
-            labels: topProducts.map((p) => p.name),
+            labels: top.map((p) => p.name),
             datasets: [
               {
                 label: "Total Likes",
-                data: topProducts.map((p) => p.totalLikes),
+                data: top.map((p) => p.totalLikes),
                 backgroundColor: "#3B82F6",
               },
             ],
@@ -125,9 +128,6 @@ const WishlistStats = ({ stats, type }) => {
               y: {
                 beginAtZero: true,
                 title: { display: true, text: "Total Likes" },
-              },
-              x: {
-                ticks: { autoSkip: false },
               },
             },
           }}

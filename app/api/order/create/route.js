@@ -5,21 +5,30 @@ import Product from "@/models/Product";
 import { NextResponse } from "next/server";
 import { inngest } from "@/config/inngest";
 import User from "@/models/user";
+import connectDB from "@/config/db";
 
 export async function POST(request) {
   try {
     const { userId } = getAuth(request);
 
     if (!userId) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const { address, items } = await request.json();
-
+    const body = await request.json();
+    const { address, items } = body;
 
     if (!address || !items || items.length === 0) {
-      return NextResponse.json({ success: false, message: "Invalid data" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Invalid data" },
+        { status: 400 }
+      );
     }
+
+    await connectDB();
 
     let amount = 0;
     const itemsWithSnapshots = [];
@@ -27,13 +36,15 @@ export async function POST(request) {
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
-        return NextResponse.json({
-          success: false,
-          message: `Product with ID ${item.product} not found`
-        }, { status: 404 });
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Product with ID ${item.product} not found`,
+          },
+          { status: 404 }
+        );
       }
 
-      
       itemsWithSnapshots.push({
         product: item.product,
         productSnapshot: {
@@ -42,17 +53,16 @@ export async function POST(request) {
           offerPrice: product.offerPrice || null,
           image: product.image,
           unit: product.unit || "kg",
-          category: product.category
+          category: product.category,
         },
-        quantity: item.quantity
+        quantity: item.quantity,
       });
 
-      amount += product.offerPrice ?
-        product.offerPrice * item.quantity :
-        product.price * item.quantity;
+      amount += product.offerPrice
+        ? product.offerPrice * item.quantity
+        : product.price * item.quantity;
     }
 
-    
     await inngest.send({
       name: "order/created",
       data: {
@@ -66,22 +76,27 @@ export async function POST(request) {
 
     const user = await User.findById(userId);
     if (!user) {
-      return NextResponse.json({ success: false, message: `User not found` }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
     }
 
     user.cartItems = {};
     await user.save();
 
-    return NextResponse.json({ success: true, message: "Order Placed" }, { status: 200 });
+    return NextResponse.json(
+      { success: true, message: "Order Placed" },
+      { status: 200 }
+    );
   } catch (error) {
-    const requestBody = await request.json();
-    const { userId } = getAuth(request);
-    logger.error('Error placing order', {
-      error: error.message,
+    console.error("[ORDER_CREATE_ERROR]", {
+      message: error.message,
       stack: error.stack,
-      requestBody,
-      userId,
     });
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

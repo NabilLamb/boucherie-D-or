@@ -8,9 +8,11 @@ import React, { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
 import { HeartIcon } from "@/assets/assets";
 import ProductCard from "@/components/ProductCard";
+import { useWishlist } from "@/context/WishlistContext";
 
-const page = () => {
-  const { user, wishlist, isWishlistLoading } = useAppContext();
+const MyLiked = () => {
+  const { user } = useAppContext();
+  const { wishlist = [], isWishlistLoading } = useWishlist();
   const [localLoading, setLocalLoading] = useState(true);
 
   useEffect(() => {
@@ -29,9 +31,10 @@ const page = () => {
               Your Favorites ({wishlist.length})
             </h1>
             <p className="mt-2 text-gray-600">
-              All products you've saved for later
+              All products you&apos;ve saved for later
             </p>
           </div>
+
           {localLoading ? (
             <Loading />
           ) : wishlist.length === 0 ? (
@@ -57,4 +60,5 @@ const page = () => {
     </>
   );
 };
-export default page;
+
+export default MyLiked;

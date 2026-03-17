@@ -19,7 +19,7 @@ const SideBar = ({ isCollapsed, setIsCollapsed }) => {
   const menuItems = [
     { 
       name: "Add Product", 
-      path: "/seller", 
+      path: "/seller/add-product", 
       icon: AddIcon 
     },
     {

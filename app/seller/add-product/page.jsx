@@ -1,4 +1,4 @@
-// app/seller/page.jsx
+// app/seller/add-product/page.jsx
 
 "use client";
 import React, { useState, useEffect } from "react";
