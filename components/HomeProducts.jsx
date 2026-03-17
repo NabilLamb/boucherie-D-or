@@ -309,11 +309,10 @@ const PageButton = ({ page, current, onClick }) => (
   <button
     onClick={() => onClick(page)}
     aria-current={page === current ? "page" : undefined}
-    className={`w-9 h-9 rounded-xl text-sm font-medium transition-colors ${
-      page === current
+    className={`w-9 h-9 rounded-xl text-sm font-medium transition-colors ${page === current
         ? "bg-amber-600 text-white"
         : "text-gray-600 hover:bg-amber-100"
-    }`}
+      }`}
   >
     {page}
   </button>
