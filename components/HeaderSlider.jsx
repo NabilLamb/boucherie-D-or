@@ -227,7 +227,7 @@ const HeaderSlider = () => {
   return (
     <div
       ref={sliderRef}
-      className="relative w-full overflow-hidden rounded-2xl shadow-2xl group focus:outline-none"
+      className="relative w-full overflow-hidden rounded-2xl shadow-2xl group focus:outline-none mb-8"
       style={{ height: "clamp(520px, 70vh, 620px)" }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -272,7 +272,7 @@ const HeaderSlider = () => {
 
       {/* Dots */}
       {offers.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {offers.map((_, index) => (
             <button
               key={index}
