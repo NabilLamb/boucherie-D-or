@@ -1,45 +1,33 @@
 // components/FeaturedProduct.jsx
 
 "use client";
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
+
+import React, { useEffect, useState, memo } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { FiShoppingCart, FiInfo, FiStar } from "react-icons/fi";
+import { FiArrowRight } from "react-icons/fi";
+import ProductCard from "./ProductCard";
 import Banner from "./Banner";
 import toast from "react-hot-toast";
-import { useAppContext } from "@/context/AppContext";
-import { useCart } from "@/context/CartContext";
 
-const FeaturedProduct = () => {
+const FeaturedProduct = memo(() => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAppContext();
-  const { addToCart } = useCart();
-  const currency = process.env.NEXT_PUBLIC_CURRENCY;
-
-  const handleAddToCart = (product) => {
-    if (!user) {
-      toast.error("Please login to add to cart");
-      return;
-    }
-    addToCart(product._id);
-    toast.success(`${product.name} added to cart`);
-  };
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get("/api/products/featured?categoryType=featured&limit=4");
-
-        const filteredProducts = data.products.filter(product =>
-          product.category?.type === 'featured'
+        setError(null);
+        // API already filters by categoryType=featured — no need to filter again client-side
+        const { data } = await axios.get(
+          "/api/products/featured?categoryType=featured&limit=4"
         );
-
-        setFeaturedProducts(filteredProducts);
-      } catch (error) {
-        console.error("Error fetching featured products:", error);
+        setFeaturedProducts(data.products || []);
+      } catch (err) {
+        console.error("[FEATURED_FETCH_ERROR]", err.message);
+        setError("Failed to load featured products.");
         toast.error("Failed to load featured products");
       } finally {
         setLoading(false);
@@ -49,148 +37,106 @@ const FeaturedProduct = () => {
   }, []);
 
   return (
-    <section id="featuredProducts" className="bg-white py-12 sm:py-16 lg:py-20">
+    <section id="featuredProducts" className="py-12 sm:py-16 lg:py-20" style={{ backgroundColor: "#FAFAF8" }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+
+        {/* Section header — centered, matches HomeProducts style */}
+        <div className="text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
             Featured Products
           </h2>
-          <div className="w-28 h-1.5 bg-amber-600 mx-auto rounded-full mt-4 mb-6" />
-          <p className="mt-2 max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed">
-            Our master butcher's premium products, hand-selected for exceptional quality and flavor
-          </p>
+          <div className="flex items-center justify-center gap-3 mt-4 mb-3">
+            <div className="h-px w-12 bg-gray-300" />
+            <p className="text-gray-500 text-sm font-medium">
+              Hand-selected by our master butcher
+            </p>
+            <div className="h-px w-12 bg-gray-300" />
+          </div>
+          <div className="w-12 h-1 bg-amber-600 rounded-full mx-auto" />
+          
+          {/* View all link below the divider */}
+          <div className="mt-4">
+            <Link
+              href="/#products"
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-amber-700 transition-colors"
+            >
+              View All Products
+              <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
 
-        {/* Product Grid */}
-        {loading ? (
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+        {/* Loading skeletons — match ProductCard proportions exactly */}
+        {loading && (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="bg-gray-100 rounded-lg overflow-hidden h-[320px] sm:h-[380px] animate-pulse"
-              />
-            ))}
-          </div>
-        ) : featuredProducts.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xl text-gray-500 mb-4">
-              Currently no featured products available
-            </div>
-            <Link
-              href="/products"
-              className="inline-flex items-center px-6 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 transition-colors duration-200"
-            >
-              View All Products
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
-              <div
-                key={product._id}
-                className="group flex flex-col overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 bg-white border border-gray-200 hover:border-amber-200 h-full"
+                className="bg-white rounded-2xl overflow-hidden border border-gray-100 animate-pulse"
               >
-                {/* Product Image */}
-                <div className="relative aspect-square bg-gray-100">
-                  <Image
-                    src={product.image[0]}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-opacity duration-300 group-hover:opacity-90"
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                    priority={true}
-                  />
-                  {/* Badges Container - Adjusted for mobile */}
-                  <div className="absolute top-2 left-2 right-2 flex justify-between">
-                    {/* Featured Badge - Smaller on mobile */}
-                    <div className="bg-amber-600 text-white px-2 py-1 rounded-md text-[7px] sm:text-xs font-bold flex items-center shadow-sm">
-                      <FiStar className="mr-1" size={10} />
-                      <span>FEATURED</span>
-                    </div>
-
-                    {/* Discount Badge - Smaller on mobile */}
-                    {product.offerPrice && (
-                      <div className="bg-red-600 text-white px-2 py-1 rounded-md text-[7px] sm:text-xs font-bold shadow-sm">
-                        SAVE{" "}
-                        {Math.round(
-                          ((product.price - product.offerPrice) / product.price) *
-                          100
-                        )}
-                        %
-                      </div>
-                    )}
+                <div className="aspect-square bg-gray-100" />
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-between">
+                    <div className="h-2.5 w-16 bg-gray-100 rounded-full" />
+                    <div className="h-2.5 w-10 bg-gray-100 rounded-full" />
                   </div>
-                </div>
-
-                {/* Product Details */}
-                <div className="flex-1 p-4 flex flex-col">
-                  <div className="mb-2">
-                    <h3 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs text-amber-600 capitalize mt-1">
-                      {product.category?.name}
-                    </p>
-                  </div>
-
-                  <p className="text-gray-600 text-xs mb-3 line-clamp-2 leading-relaxed">
-                    {product.description}
-                  </p>
-
-                  {/* Pricing */}
-                  <div className="mt-auto mb-3">
-                    {product.offerPrice ? (
-                      <div className="flex flex-col">
-                        <span className="text-lg font-bold text-amber-700">
-                          {currency}
-                          {product.offerPrice.toFixed(2)}
-                        </span>
-                        <span className="text-xs text-gray-400 line-through">
-                          {currency}
-                          {product.price.toFixed(2)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-lg font-bold text-gray-900">
-                        {currency}
-                        {product.price.toFixed(2)}
-                      </span>
-                    )}
-                    <span className="block text-xs text-gray-500 mt-1">
-                      {product.unit}
-                    </span>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href={`/product/${product._id}`}
-                      className="inline-flex items-center justify-center bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 py-2 px-2 rounded-md font-medium transition-colors text-xs sm:text-sm"
-                    >
-                      <FiInfo className="mr-1.5" size={14} />
-                      Details
-                    </Link>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                      className="inline-flex items-center justify-center bg-amber-600 hover:bg-amber-700 text-white py-2 px-2 rounded-md font-medium transition-colors text-xs sm:text-sm"
-                    >
-                      <FiShoppingCart className="mr-0.5" size={14} />
-                      Add
-                    </button>
+                  <div className="h-4 w-3/4 bg-gray-100 rounded" />
+                  <div className="h-3 w-full bg-gray-100 rounded" />
+                  <div className="h-3 w-2/3 bg-gray-100 rounded" />
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                    <div className="h-5 w-16 bg-gray-100 rounded" />
+                    <div className="h-8 w-14 bg-gray-100 rounded-xl" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-medium transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !error && featuredProducts.length === 0 && (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 mb-4">
+              No featured products available at the moment.
+            </p>
+            <Link
+              href="/#products"
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-medium transition-colors"
+            >
+              Browse All Products
+              <FiArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+
+        {/* Product grid — reuses ProductCard for full consistency */}
+        {!loading && !error && featuredProducts.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
+
       <Banner />
     </section>
   );
-};
+});
+
+FeaturedProduct.displayName = "FeaturedProduct";
 
 export default FeaturedProduct;
