@@ -1,31 +1,26 @@
 // app/product/[id]/page.jsx
 
+import { notFound } from "next/navigation";
 import ProductPageClient from "./ProductPageClient";
 
-/**
- * generateMetadata
- * Fetches product data to inject SEO tags.
- * Uses Next.js Data Cache (revalidate) to avoid over-fetching.
- */
 export async function generateMetadata({ params }) {
   try {
     const { id } = await params;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://boucherie-d-or.vercel.app";
-    
-    // Fetch with Next.js specific caching logic
+
     const res = await fetch(`${baseUrl}/api/products/${id}`, {
-      next: { revalidate: 3600 }, // Cache SEO data for 1 hour
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
-      return { 
+      return {
         title: "Product Not Found | Boucherie D'or",
-        description: "The requested product could not be found."
+        description: "The requested product could not be found.",
       };
     }
 
     const { product } = await res.json();
-    const currency = process.env.NEXT_PUBLIC_CURRENCY || "DH"; // Updated to your usual currency
+    const currency = process.env.NEXT_PUBLIC_CURRENCY || "DH";
     const price = product.offerPrice || product.price;
     const productTitle = `${product.name} | Boucherie D'or`;
     const productDescription = product.description?.slice(0, 155) || "Quality meat products from Boucherie D'or.";
@@ -33,9 +28,7 @@ export async function generateMetadata({ params }) {
     return {
       title: productTitle,
       description: productDescription,
-      alternates: {
-        canonical: `${baseUrl}/product/${id}`,
-      },
+      alternates: { canonical: `${baseUrl}/product/${id}` },
       openGraph: {
         title: productTitle,
         description: `${currency}${price.toFixed(2)} / ${product.unit} — ${productDescription}`,
@@ -45,7 +38,7 @@ export async function generateMetadata({ params }) {
           ? [
               {
                 url: product.image[0],
-                width: 1200, // Best size for Facebook/WhatsApp sharing
+                width: 1200,
                 height: 630,
                 alt: product.name,
               },
@@ -62,19 +55,35 @@ export async function generateMetadata({ params }) {
     };
   } catch (error) {
     console.error("[METADATA_ERROR]", error);
-    return { 
+    return {
       title: "Boucherie D'or - Premium Meat Shop",
-      description: "Quality products delivered to your door."
+      description: "Quality products delivered to your door.",
     };
   }
 }
 
-/**
- * ProductPage Component
- * Passes the params to the client-side component for rendering.
- */
 export default async function ProductPage({ params }) {
-  // In Next.js 15+, params should be awaited if used in the component body,
-  // but here we just pass it to the Client Component.
-  return <ProductPageClient params={params} />;
+  const { id } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://boucherie-d-or.vercel.app";
+
+  // Fetch product
+  const productRes = await fetch(`${baseUrl}/api/products/${id}`, {
+    next: { revalidate: 60 },
+  });
+
+  if (!productRes.ok) notFound();
+
+  const { product } = await productRes.json();
+
+  // Extract category ID correctly (handles both object and string)
+  const categoryId = product.category?._id || product.category;
+
+  // Fetch related products using the category ID, excluding current product
+  const relatedRes = await fetch(
+    `${baseUrl}/api/products?category=${categoryId}&exclude=${id}&limit=12`,
+    { next: { revalidate: 60 } }
+  );
+  const { products: relatedProducts } = await relatedRes.json();
+
+  return <ProductPageClient product={product} relatedProducts={relatedProducts || []} />;
 }
