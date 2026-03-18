@@ -1,5 +1,6 @@
-"use client";
 // components/HeaderSlider.jsx
+
+"use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
