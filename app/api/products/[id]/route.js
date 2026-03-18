@@ -8,7 +8,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import connectDB from "@/config/db";
 import mongoose from "mongoose";
 
-// GET - Single Product with Caching
+// GET - Single Product with Caching (Fix 4 applied)
 export async function GET(request, { params }) {
   try {
     await connectDB();
@@ -17,14 +17,20 @@ export async function GET(request, { params }) {
     const product = await Product.findById(id).populate('category');
 
     if (!product) {
-      return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "Product not found" }, 
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(
       { success: true, product },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+          // public: allows CDN caching
+          // s-maxage=60: Cache on Edge for 60 seconds
+          // stale-while-revalidate=300: If older than 60s, serve old data while fetching new in background
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
         },
       }
     );
@@ -55,9 +61,9 @@ export async function PUT(request, { params }) {
 
     const { id } = await params;
     const formData = await request.formData();
-    const category = formData.get("category");
+    const categoryId = formData.get("category");
 
-    if (!category || !mongoose.Types.ObjectId.isValid(category)) {
+    if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
       return NextResponse.json(
         { success: false, message: "Invalid category ID format" },
         { status: 400 }
@@ -70,11 +76,11 @@ export async function PUT(request, { params }) {
     }
 
     // Process images
-    const existingImages = JSON.parse(formData.get('existingImages')) || [];
+    const existingImages = JSON.parse(formData.get('existingImages') || "[]");
     const newImages = formData.getAll('image');
 
     const uploadedImages = await Promise.all(
-      newImages.filter(file => file.size > 0).map(async (file) => {
+      newImages.filter(file => file instanceof File && file.size > 0).map(async (file) => {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
         const result = await uploadToCloudinary(buffer);
@@ -85,7 +91,7 @@ export async function PUT(request, { params }) {
     const updateData = {
       name: formData.get('name'),
       description: formData.get('description'),
-      category: formData.get('category'),
+      category: categoryId,
       price: parseFloat(formData.get('price')),
       unit: formData.get('unit'),
       image: [...existingImages, ...uploadedImages].slice(0, 4)
@@ -94,7 +100,7 @@ export async function PUT(request, { params }) {
     const offerPrice = formData.get('offerPrice');
     updateData.offerPrice = offerPrice ? parseFloat(offerPrice) : null;
 
-    // Update the product (Any seller can update any product)
+    // Update the product
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       updateData,
@@ -128,7 +134,6 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
     }
 
-    // Delete the product (Any seller can delete any product)
     await Product.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: "Product deleted successfully" });

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
@@ -17,6 +17,14 @@ const ProductCard = React.memo(({ product }) => {
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Loading state for navigation feedback
+  const [navigating, setNavigating] = useState(false);
+
+  // Reset navigating state if user returns to this page (via back button)
+  useEffect(() => {
+    setNavigating(false);
+  }, []);
 
   const liked = isInWishlist(product._id);
   const discount = product.offerPrice
@@ -24,7 +32,6 @@ const ProductCard = React.memo(({ product }) => {
     : 0;
 
   const handleWishlist = async (e) => {
-    // Stop the Link from navigating when clicking the heart
     e.preventDefault();
     e.stopPropagation();
     if (!user) { toast.error("Please login to save favorites"); return; }
@@ -38,7 +45,6 @@ const ProductCard = React.memo(({ product }) => {
   };
 
   const handleAddToCart = (e) => {
-    // Stop the Link from navigating when clicking Add to Cart
     e.preventDefault();
     e.stopPropagation();
     if (!user) { toast.error("Please login to add to cart"); return; }
@@ -47,10 +53,12 @@ const ProductCard = React.memo(({ product }) => {
   };
 
   return (
-    // The entire card is a Link — clicking anywhere navigates to product detail
     <Link
       href={`/product/${product._id}`}
-      className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-amber-200 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer"
+      prefetch={true} // Force prefetching for faster page loads
+      onClick={() => setNavigating(true)} //  1: Trigger loading state
+      className={`group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-amber-200 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer 
+        ${navigating ? "opacity-70 scale-[0.98] grayscale-[0.2]" : ""}`}
     >
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
@@ -64,28 +72,33 @@ const ProductCard = React.memo(({ product }) => {
 
         {/* Discount badge */}
         {discount > 0 && (
-          <div className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">
+          <div className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm z-10">
             -{discount}%
           </div>
         )}
 
-        {/* Wishlist button — e.stopPropagation prevents card navigation */}
+        {/* Wishlist button */}
         <button
           onClick={handleWishlist}
           disabled={isProcessing}
           aria-label={liked ? "Remove from favorites" : "Add to favorites"}
-          className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 z-10"
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 z-20"
         >
           <FiHeart
-            className={`w-4 h-4 transition-colors ${liked ? "fill-red-500 text-red-500" : "text-gray-400"
-              }`}
+            className={`w-4 h-4 transition-colors ${liked ? "fill-red-500 text-red-500" : "text-gray-400"}`}
           />
         </button>
+
+        {/* Optional: Loading Spinner Overlay */}
+        {navigating && (
+          <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] flex items-center justify-center z-30">
+            <div className="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
       </div>
 
       {/* Info */}
       <div className="flex flex-col flex-grow p-4">
-        {/* Category + Unit */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
             {product.category?.name || "Premium Cut"}
@@ -95,12 +108,10 @@ const ProductCard = React.memo(({ product }) => {
           </span>
         </div>
 
-        {/* Name */}
         <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-snug mb-2 line-clamp-2 group-hover:text-amber-700 transition-colors">
           {product.name}
         </h3>
 
-        {/* Description — 3 lines gives enough context without overflowing */}
         <p className="text-xs text-gray-500 leading-relaxed line-clamp-3 flex-grow mb-4">
           {product.description}
         </p>
@@ -118,11 +129,10 @@ const ProductCard = React.memo(({ product }) => {
             )}
           </div>
 
-          {/* Add to Cart — e.stopPropagation prevents card navigation */}
           <button
             onClick={handleAddToCart}
             aria-label={`Add ${product.name} to cart`}
-            className="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow-amber-200 hover:shadow-md z-10"
+            className="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow-amber-200 hover:shadow-md z-20"
           >
             <FiShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
             <span>Add</span>
