@@ -64,7 +64,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductPage({ params }) {
   const { id } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://boucherie-d-or.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   // Fetch product
   const productRes = await fetch(`${baseUrl}/api/products/${id}`, {
