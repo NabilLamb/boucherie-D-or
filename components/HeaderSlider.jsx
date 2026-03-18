@@ -70,7 +70,7 @@ const Slide = React.memo(({ product, isActive, currency, onAddToCart }) => {
         }}
       />
 
-      <div className="relative h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-10 lg:px-16 gap-6">
+      <div className="relative h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-10 lg:px-16 gap-2 md:gap-6">
         {/* Text */}
         <div className="flex-1 text-white space-y-3 md:space-y-4 pt-6 md:pt-0 max-w-xl">
           <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 rounded-full px-3 py-1">
@@ -122,7 +122,7 @@ const Slide = React.memo(({ product, isActive, currency, onAddToCart }) => {
         </div>
 
         {/* Image */}
-        <div className="relative flex-shrink-0 w-[220px] h-[220px] md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px] group/img">
+        <div className="relative flex-shrink-0 w-[180px] h-[180px] md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px] group/img mb-6 md:mb-0">
           <div className="absolute inset-4 rounded-full bg-amber-500/10 blur-3xl animate-pulse" />
           <div className="absolute inset-0 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
             <Image
@@ -195,7 +195,7 @@ const HeaderSlider = () => {
     return (
       <div
         className="w-full rounded-2xl bg-gradient-to-r from-red-950 to-red-800 animate-pulse"
-        style={{ height: "clamp(400px, 55vh, 560px)" }}
+        style={{ height: "clamp(520px, 70vh, 620px)" }}
       />
     );
   }
@@ -205,7 +205,7 @@ const HeaderSlider = () => {
     return (
       <div
         className="relative w-full overflow-hidden rounded-2xl shadow-2xl"
-        style={{ height: "clamp(400px, 55vh, 560px)" }}
+        style={{ height: "clamp(520px, 70vh, 620px)" }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-red-950 to-red-800" />
         <div className="relative h-full flex flex-col items-center justify-center text-white px-6 text-center gap-6">
@@ -228,7 +228,7 @@ const HeaderSlider = () => {
     <div
       ref={sliderRef}
       className="relative w-full overflow-hidden rounded-2xl shadow-2xl group focus:outline-none"
-      style={{ height: "clamp(400px, 55vh, 560px)" }}
+      style={{ height: "clamp(520px, 70vh, 620px)" }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       tabIndex={0}
