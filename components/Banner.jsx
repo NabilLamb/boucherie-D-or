@@ -1,5 +1,4 @@
 // components/Banner.jsx
-
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
@@ -52,17 +51,17 @@ const Banner = () => {
         className="flex transition-transform duration-500 ease-in-out"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {bannerProducts.map((product, index) => (
+        {bannerProducts.map((product) => (
           <div
             key={product._id}
             className="relative flex min-w-full flex-col md:flex-row"
           >
-            {/* Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-red-900/80 to-red-800/60" />
+            {/* Lightened Background Gradient for better visibility */}
+            <div className="absolute inset-0 bg-gradient-to-r from-red-700/70 to-red-600/40" />
 
             {/* Content */}
             <div className="relative z-10 flex flex-1 flex-col justify-center p-8 text-white md:p-12 lg:p-16">
-              <span className="mb-2 inline-block rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
+              <span className="mb-2 inline-block rounded-full bg-white/20 px-4 py-2 text-sm font-semibold w-fit">
                 Special Selection
               </span>
               <h2 className="text-4xl font-bold leading-tight md:text-5xl">
@@ -71,13 +70,14 @@ const Banner = () => {
               <p className="mt-4 max-w-md text-lg opacity-90">
                 {product.description}
               </p>
+              
               <div className="mt-6 flex items-baseline gap-4">
                 {product.offerPrice ? (
                   <>
                     <span className="text-3xl font-bold md:text-4xl">
                       {currency}{product.offerPrice}
                     </span>
-                    <span className="text-xl text-red-200 line-through">
+                    <span className="text-xl text-red-100 line-through opacity-70">
                       {currency}{product.price}
                     </span>
                   </>
@@ -86,13 +86,13 @@ const Banner = () => {
                     {currency}{product.price}
                   </span>
                 )}
-                <span className="text-lg text-red-200">/{product.unit}</span>
+                <span className="text-lg text-red-100">/{product.unit}</span>
               </div>
 
               <div className="mt-8 flex flex-col md:flex-row items-start md:items-center gap-4">
                 <Link
                   href={`/product/${product._id}`}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-2 md:px-8 md:py-3 text-base md:text-lg font-semibold text-red-600 transition-all hover:bg-gray-100 hover:scale-105 hover:shadow-md"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-2 md:px-8 md:py-3 text-base md:text-lg font-semibold text-red-600 transition-all hover:bg-gray-100 hover:scale-105"
                 >
                   Discover the Offer
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -102,28 +102,24 @@ const Banner = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (!user) {
-                      toast.error("Please login to add to cart");
-                      return;
-                    }
                     handleAddToCart(product);
                     router.push("/cart");
                   }}
-                  className="inline-block w-fit rounded-full bg-amber-400 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-amber-500 hover:scale-105 hover:shadow-md"
+                  className="inline-block w-fit rounded-full bg-amber-400 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-amber-500 hover:scale-105"
                 >
                   Shop Now →
                 </button>
               </div>
             </div>
 
-            {/* Images */}
+            {/* Product Image */}
             <div className="relative flex flex-1 items-center justify-center p-8">
-              <div className="relative aspect-square w-full max-w-xl">
+              <div className="relative aspect-square w-full max-w-sm lg:max-w-md">
                 <Image
                   src={product.image[0]}
                   alt={product.name}
                   fill
-                  className="object-contain"
+                  className="object-contain drop-shadow-2xl"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority
                 />
@@ -135,13 +131,13 @@ const Banner = () => {
 
       {/* Pagination */}
       {bannerProducts.length > 1 && (
-        <div className=" absolute bottom-3 left-1/2 flex -translate-x-1/2 transform gap-2">
+        <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 transform gap-2">
           {bannerProducts.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`h-2 w-8 rounded-full transition-all ${
-                index === currentSlide ? "bg-white" : "bg-white/50"
+                index === currentSlide ? "bg-white" : "bg-white/40"
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />
