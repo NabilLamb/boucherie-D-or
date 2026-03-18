@@ -53,8 +53,8 @@ const ImageGallery = ({ product }) => {
             key={index}
             onClick={() => setMainImage(index)}
             className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${index === mainImage
-                ? "border-amber-600 shadow-md scale-105"
-                : "border-gray-200 hover:border-amber-400"
+              ? "border-amber-600 shadow-md scale-105"
+              : "border-gray-200 hover:border-amber-400"
               }`}
             aria-pressed={index === mainImage}
             aria-label={`View ${product.name} image ${index + 1}`}
@@ -82,7 +82,8 @@ const ProductInfo = ({ product, onAddToCart, onBuyNow }) => {
   const step = isWeightUnit ? 0.1 : 1;
   const minQty = isWeightUnit ? 0.1 : 1;
 
-  const [quantity, setQuantity] = useState(minQty);
+  // Default quantity is 1 for all products
+  const [quantity, setQuantity] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const liked = isInWishlist(product._id);
@@ -285,8 +286,8 @@ const RelatedProductsCarousel = ({ products }) => {
           onClick={() => scroll("left")}
           disabled={!canScrollLeft}
           className={`absolute -left-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-xl transition-all ${canScrollLeft
-              ? "text-gray-800 hover:bg-gray-100"
-              : "cursor-not-allowed text-gray-300 opacity-50"
+            ? "text-gray-800 hover:bg-gray-100"
+            : "cursor-not-allowed text-gray-300 opacity-50"
             }`}
           aria-label="Previous products"
         >
@@ -296,8 +297,8 @@ const RelatedProductsCarousel = ({ products }) => {
           onClick={() => scroll("right")}
           disabled={!canScrollRight}
           className={`absolute -right-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-xl transition-all ${canScrollRight
-              ? "text-gray-800 hover:bg-gray-100"
-              : "cursor-not-allowed text-gray-300 opacity-50"
+            ? "text-gray-800 hover:bg-gray-100"
+            : "cursor-not-allowed text-gray-300 opacity-50"
             }`}
           aria-label="Next products"
         >
