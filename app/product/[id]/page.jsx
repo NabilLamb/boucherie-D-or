@@ -6,7 +6,7 @@ import ProductPageClient from "./ProductPageClient";
 export async function generateMetadata({ params }) {
   try {
     const { id } = await params;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://boucherie-d-or.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const res = await fetch(`${baseUrl}/api/products/${id}`, {
       next: { revalidate: 3600 },
