@@ -23,12 +23,8 @@ export async function GET(request) {
 
     const orders = await Order.find({})
       .populate({
-        path: "items.product",
-        select: "name price offerPrice image category",
-      })
-      .populate({
         path: "address",
-        select: "fullName phone postalCode city address additionalInfo",
+        select: "fullName phoneNumber area city state zipcode",
       })
       .sort({ date: -1 });
 

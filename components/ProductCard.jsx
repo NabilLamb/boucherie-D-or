@@ -1,5 +1,4 @@
 // components/ProductCard.jsx
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -31,11 +30,16 @@ const ProductCard = React.memo(({ product }) => {
   const handleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) { toast.error("Please login to save favorites"); return; }
+    if (!user) {
+      toast.error("Please login to save favorites");
+      return;
+    }
     if (isProcessing) return;
     setIsProcessing(true);
     try {
-      liked ? await removeFromWishlist(product._id) : await addToWishlist(product);
+      liked
+        ? await removeFromWishlist(product._id)
+        : await addToWishlist(product);
     } finally {
       setIsProcessing(false);
     }
@@ -44,7 +48,10 @@ const ProductCard = React.memo(({ product }) => {
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) { toast.error("Please login to add to cart"); return; }
+    if (!user) {
+      toast.error("Please login to add to cart");
+      return;
+    }
     addToCart(product._id);
     toast.success(`${product.name} added to cart`);
   };
@@ -93,7 +100,7 @@ const ProductCard = React.memo(({ product }) => {
         </button>
       </div>
 
-      {/* Info — flex-1 added to grow and push price row down */}
+      {/* Info — flex-1 grows to fill remaining space */}
       <div className="p-3 flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between">
           <span className="text-[7px] sm:text-[10px] font-bold uppercase tracking-wider text-amber-700 truncate">
@@ -108,20 +115,24 @@ const ProductCard = React.memo(({ product }) => {
           {product.name}
         </h3>
 
-        {/* Description — line-clamp-3 for better desktop alignment */}
-        <p className="hidden sm:block text-xs text-gray-500 leading-relaxed line-clamp-3">
-          {product.description}
-        </p>
+        {/* Description — hidden on mobile, shown on desktop with fixed height for 3 lines */}
+        <div className="hidden sm:block min-h-[4.5rem]"> {/* approx 3 lines at 1.5rem line-height */}
+          <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
+            {product.description}
+          </p>
+        </div>
 
         {/* Price + Add to Cart — mt-auto pins this to the bottom */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto gap-2">
           <div className="flex flex-col min-w-0">
             <span className="text-sm sm:text-base font-black text-gray-900 leading-tight">
-              {currency}{(product.offerPrice || product.price).toFixed(2)}
+              {currency}
+              {(product.offerPrice || product.price).toFixed(2)}
             </span>
             {product.offerPrice && (
               <span className="text-[10px] text-gray-400 line-through leading-tight">
-                {currency}{product.price.toFixed(2)}
+                {currency}
+                {product.price.toFixed(2)}
               </span>
             )}
           </div>

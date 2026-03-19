@@ -2,6 +2,7 @@
 
 import connectDB from "@/config/db";
 import Product from "@/models/Product";
+import "@/models/Category";
 
 export const GET = async (req) => {
   try {
