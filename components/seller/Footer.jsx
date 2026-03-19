@@ -8,47 +8,39 @@ const SellerFooter = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="flex md:flex-row flex-col-reverse items-center justify-between text-left w-full px-10 py-4 border-t border-gray-200 mt-8">
-      <div className="flex items-center gap-4">
+    <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full px-4 sm:px-8 py-4 border-t border-gray-200 bg-white mt-auto">
+      <div className="flex items-center gap-3">
         <Image
-          className="hidden md:block"
+          className="hidden sm:block"
           src={assets.logo}
           alt="Boucherie D'or logo"
-          width={80}
-          height={30}
+          width={72}
+          height={28}
         />
-        <div className="hidden md:block h-7 w-px bg-gray-300" />
-        <p className="py-4 text-center text-xs md:text-sm text-gray-500">
+        <div className="hidden sm:block h-6 w-px bg-gray-200" />
+        <p className="text-xs text-gray-400">
           © {currentYear} Boucherie D&apos;or. All rights reserved.
         </p>
       </div>
+
       <div className="flex items-center gap-3">
-        <a
-          href="https://www.facebook.com/profile.php?id=100063739235616"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Facebook"
-        >
-          <Image src={assets.facebook_icon} alt="Facebook" />
-        </a>
-        <a
-          href="https://twitter.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Twitter"
-        >
-          <Image src={assets.twitter_icon} alt="Twitter" />
-        </a>
-        <a
-          href="https://www.instagram.com/boucherie_dor/"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Instagram"
-        >
-          <Image src={assets.instagram_icon} alt="Instagram" />
-        </a>
+        {[
+          { href: "https://www.facebook.com/profile.php?id=100063739235616", src: assets.facebook_icon, label: "Facebook" },
+          { href: "https://www.instagram.com/boucherie_dor/", src: assets.instagram_icon, label: "Instagram" },
+        ].map(({ href, src, label }) => (
+          <a
+            key={label}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={label}
+            className="opacity-60 hover:opacity-100 transition-opacity"
+          >
+            <Image src={src} alt={label} width={20} height={20} />
+          </a>
+        ))}
       </div>
-    </div>
+    </footer>
   );
 };
 
