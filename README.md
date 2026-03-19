@@ -89,16 +89,11 @@ Built with **real business constraints**: no Stripe availability in Morocco (dev
     <td><img src="public/screenshots/cart.png" width="280"/></td>
     <td><img src="public/screenshots/favories.png" width="280"/></td>
   </tr>
-</table>
-
-<table>
   <tr>
-    <td align="center" width="50%"><b>My Orders (Customer View)</b></td>
-    <td align="center" width="50%"><b>Mobile Experience</b></td>
+    <td align="center" colspan="3"><b>My Orders</b></td>
   </tr>
   <tr>
-    <td><img src="public/screenshots/orders.png" width="420"/></td>
-    <td><img src="public/screenshots/mobile.png" width="240"/></td>
+    <td colspan="3" align="center"><img src="public/screenshots/orders.png" width="600"/></td>
   </tr>
 </table>
 
@@ -132,6 +127,11 @@ Built with **real business constraints**: no Stripe availability in Morocco (dev
     <td></td>
   </tr>
 </table>
+
+---
+
+### 📱 Mobile Experience
+<img src="public/screenshots/mobile.png" width="380" alt="Mobile Experience"/>
 
 ---
 
