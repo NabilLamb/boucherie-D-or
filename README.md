@@ -506,25 +506,6 @@ NEXT_PUBLIC_BASE_URL=https://boucherie-d-or.vercel.app
 
 ---
 
-## 🧠 What I Learned
-
-### `productSnapshot` — the most important design decision
-Without it, editing a product's price retroactively changes every past order total. Locking a snapshot at purchase time is standard in every real e-commerce platform. This isn't something tutorials teach — it came from thinking through real business scenarios.
-
-### Context splitting matters at scale
-Starting with one `AppContext` caused the entire app to re-render on every cart update — including all 12 product cards on the homepage. Splitting into three focused contexts dropped unnecessary renders to zero.
-
-### Next.js 15 async params is a breaking change
-All dynamic route params must now be `await`ed (`const { id } = await params`). This caused silent 500 errors in production that took real debugging to trace since they only appeared under specific navigation patterns.
-
-### MongoDB cold starts on free tier
-Atlas M0 cold-starts after ~5 minutes of inactivity. Without connection caching in `db.js` and retry logic in the context, every first page load after idle showed a 2-3 second blank screen. The fix was connection pooling and a retry loop in `fetchProducts`.
-
-### Payment solutions for Morocco
-Stripe is unavailable for Moroccan developers. This forced a real product decision: build a payment-processor-agnostic modal that can plug into Paddle, PayDunya, or any other provider. That constraint produced better architecture than Stripe copy-paste would have.
-
----
-
 ## 👨‍💻 Author
 
 **Nabil Lambattan** — Frontend Developer (React.js / Next.js)
